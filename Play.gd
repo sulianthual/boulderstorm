@@ -6,10 +6,15 @@ export (PackedScene) var Fall
 ################
 
 # Game Parameters (may edit here)
-var hpref=5 # starting health for player (must be <=5)
-var btmax = 1# beat time in seconds
-var bmin=1# min boulder number that can fall each beat (only if dorandomboulders)
-var bmax=4# max boulder number that can fall each beat (only if dorandomboulders)
+var hpref: int=5 # starting health for player (must be <=5)
+var levelscores=[1,2,3,4,5]# scores needed to increases each level
+var btmax: float = 1# max beat time in seconds (at level 1)
+var btmin: float = 0.6# min beat time in seconds (at max level)
+var bminlvlmin: int =1 # min boulder number that can randomly fall each beat (at min level)
+var bmaxlvlmin: int =3 # max boulder number that can randomly fall each beat (at min level)
+var bminlvlmax: int =1 # min boulder (at max level)
+var bmaxlvlmax: int =9 # max boulder (at max level)
+
 
 ################
 # utils
@@ -22,26 +27,30 @@ var k: int
 var xglist=[80,240,400]# x-positions on grid
 var yglist=[80,240,400]# y-positions on grid
 
+# beat
+var btnow: float =btmax# current beat time in seconds
+
 # score and level
-var levelscores=[1,2,3]# scores needed to increases levels 
-var level=1# level index (starts at 1)
-var levelmax=len(levelscores)+1
-var score# player score (>=0), defined at game start
+var level: int =1# level index (starts at 1)
+var levelmax: int =len(levelscores)+1# max level (game parameters constant after it)
+var score: int# player score (>=0), defined at game start
 var canchangelevel=true# can change level
 
 
 # player
-var ip = 1# player x-position index (0-2)
-var jp = 1# player y-position index (0-2)
-var ipn = 1# where player wants to be next turn
-var jpn = 1# where player wants to be next turn
-var sp = 0 # player state (0-4 for stand, aiming, hit, hitaiming, dead)
-var op = 0 # player orientation (0-3 for r,u,l,d)
-var hp # player health (>=0 and <=hpmax in HUD), defined at start game
+var ip: int = 1# player x-position index (0-2)
+var jp: int = 1# player y-position index (0-2)
+var ipn: int = 1# where player wants to be next turn
+var jpn: int = 1# where player wants to be next turn
+var sp: int = 0 # player state (0-4 for stand, aiming, hit, hitaiming, dead)
+var op: int = 0 # player orientation (0-3 for r,u,l,d)
+var hp: int # player health (>=0 and <=hpmax in HUD), defined at start game
 var playercanmove=true # player can move or not
 var playerhpregen=false# player regens +1hp per turn (for tutorial)
 
 # boulders
+var bmin: int=bminlvlmin# current min boulder number that can randomly fall each beat 
+var bmax: int=bmaxlvlmin# current max boulder number that can randomly fall each beat
 var sgb# grid boulder state as vector (0-3 for empty, warn, stand, decay), matrix made during init
 var sgbnew# grid for new boulders (0-1), make during init
 var sgbd={}# dictionary of boulder instances (labelled as "ij")
@@ -50,8 +59,8 @@ var sgsd={}# dictionary of smoke instances (labelled as "ij")
 var sgf# grid fall state when a boulder has fallen (0-1)
 var sgfd={}# dictionary of fall instances (labelled as "ij")
 var boulderscandecay=true# boulders can decay or not
-var dorandomboulders=true# each turn do random boulders
-var docyclicboulders=false# each turn do cyclic boulders
+var dorandomboulders=true# each turn do random boulders (default)
+var docyclicboulders=false# each turn do cyclic boulders (not default)
 var sgbnewcyclep# period for cyclic boulders (=0 no boulder, >0 for period)
 var sgbnewcyclet# time increment for cyclic boulders
 ###############
@@ -95,7 +104,6 @@ func _ready():
 	sgf= matrix3x3()# fall
 	#
 	# game preparation
-	$BeatTimer.wait_time= btmax
 	if Main.dotutorial:
 		start_tutorial()# start new game
 	else:
@@ -119,6 +127,7 @@ func start():
 	score=0
 	$HUD.showscore(score)
 	# start the beat
+	$BeatTimer.wait_time=btnow
 	$BeatTimer.start()
 	# Next level
 	$NextLevelText.show()
@@ -144,6 +153,7 @@ func start_tutorial():
 	$NextLevelText.hide()
 	$HUD.showscore(score)
 	# start the beat
+	$BeatTimer.wait_time=btnow
 	$BeatTimer.start()
 	# messages
 	$HUD/HeadHUD.hide()
@@ -252,10 +262,27 @@ func changelevel():
 	removeallfalls()
 #	removeallsmokes()
 	# change game parameters depending on settings
-	if level == 1:
-		print('change me')
-#		$Background.color = Color(1, 0, 0, 1) # Set ColorRect's color to red.
-
+	if level<levelmax:
+		# background color (linear)
+		var tempo=1.0-float(level)/float(levelmax)*0.9
+		$GridColor.color = Color(1, tempo, tempo, 1) # to red
+		# beat speed (power law, est )
+		btnow=btmax*pow(btmin/btmax,float(level-1)/float(levelmax-1))
+		$BeatTimer.wait_time= btnow
+		# randomized boulders (linear)
+		bmin = int( bminlvlmin+float(level)/float(levelmax)*(bminlvlmax-bminlvlmin) )
+		bmax = int( bmaxlvlmin+float(level)/float(levelmax)*(bmaxlvlmax-bmaxlvlmin) )
+	else:
+		# background color
+		$GridColor.color = Color(1, 1-0.9, 1-0.9, 1) # alsmot red
+		# beat speed
+		btnow=btmin
+		$BeatTimer.wait_time=btnow
+		# randomized boulders
+		bmin=bminlvlmax
+		bmax=bmaxlvlmax
+		
+		
 # next level message
 func _on_NextLevelTextTimer_timeout():
 	$NextLevelText.hide()
@@ -269,6 +296,7 @@ func _process(delta):
 	orientplayer()
 	checklevel()
 	devcontrols()
+	
 
 # when BeatTimer rings
 func beatrings():
@@ -279,12 +307,16 @@ func beatrings():
 	updatesmokes()# update new/old smokes
 	updatefalls()# update new/old falls
 	hitplayer()# hit player if on boulder spot
+	#
+
 
 # developper controls
 func devcontrols():
 	if Input.is_action_pressed("ui_select"):
 		Main.to_start()
-
+	#
+#	print($BeatTimer.wait_time)
+	print(str(bmin)+' '+str(bmax))
 ###############
 # player
 
@@ -539,6 +571,7 @@ func die():
 				removeboulder(i,j)
 	# Dead Message
 	$HUD.showdeadmessage(score)
+	$HUD/LevelCount.hide()
 	# Stop Play Music
 	$PlayMusic.stop()
 

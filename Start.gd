@@ -12,8 +12,10 @@ func _ready():
 	$StartTimer.wait_time=0.5
 
 # update
-#func _process(delta):
-#	pass
+func _process(delta):
+	pass
+
+		
 
 # Start Game
 func _on_StartButton_pressed():
