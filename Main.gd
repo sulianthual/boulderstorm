@@ -3,7 +3,7 @@ extends Node
 ################
 
 var dotutorial=false# play tutorial
-var tutorialpart=4# part of tutorial played
+var tutorialpart=0# part of tutorial played (starts at 0)
 var tutorialdone=false# ended tutorial
 ################
 # Main script (entry point for code)
@@ -17,6 +17,8 @@ func _ready():
 	get_tree().change_scene("res://Start.tscn")
 
 func to_start():
+	dotutorial=false# global
+	tutorialpart= 0# reset tutorial part	
 	get_tree().change_scene("res://Start.tscn")
 
 
@@ -28,6 +30,8 @@ func to_tutorial():
 	dotutorial=true# global
 	tutorialpart += 1# update tutorial part
 	get_tree().change_scene("res://Play.tscn")
+
+	
 	
 func to_quit():
 	get_tree().quit()

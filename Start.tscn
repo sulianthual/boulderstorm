@@ -18,21 +18,21 @@ animations = [ {
 "speed": 1.0
 } ]
 
-[sub_resource type="StyleBoxEmpty" id=7]
+[sub_resource type="StyleBoxEmpty" id=3]
 
-[sub_resource type="StyleBoxEmpty" id=10]
+[sub_resource type="StyleBoxEmpty" id=4]
 
-[sub_resource type="StyleBoxEmpty" id=9]
+[sub_resource type="StyleBoxEmpty" id=5]
 
-[sub_resource type="StyleBoxEmpty" id=8]
+[sub_resource type="StyleBoxEmpty" id=6]
 
-[sub_resource type="DynamicFont" id=11]
+[sub_resource type="DynamicFont" id=7]
 size = 40
 extra_spacing_top = 5
 extra_spacing_bottom = 15
 font_data = ExtResource( 2 )
 
-[sub_resource type="ShortCut" id=5]
+[sub_resource type="ShortCut" id=8]
 
 [node name="Start" type="Node"]
 script = ExtResource( 5 )
@@ -41,12 +41,12 @@ script = ExtResource( 5 )
 margin_right = 480.0
 margin_bottom = 720.0
 rect_pivot_offset = Vector2( 123.06, 423.937 )
-color = Color( 0.482353, 0.482353, 0.482353, 1 )
 __meta__ = {
 "_edit_use_anchors_": false
 }
 
 [node name="Grid" type="TextureRect" parent="."]
+visible = false
 margin_right = 40.0
 margin_bottom = 40.0
 texture = ExtResource( 7 )
@@ -101,12 +101,12 @@ margin_top = -234.0
 margin_right = 106.0
 margin_bottom = -160.0
 rect_scale = Vector2( 1, 1.01736 )
-custom_styles/hover = SubResource( 7 )
-custom_styles/pressed = SubResource( 10 )
-custom_styles/focus = SubResource( 9 )
-custom_styles/normal = SubResource( 8 )
-custom_fonts/font = SubResource( 11 )
-custom_colors/font_color = Color( 1, 1, 1, 1 )
+custom_styles/hover = SubResource( 3 )
+custom_styles/pressed = SubResource( 4 )
+custom_styles/focus = SubResource( 5 )
+custom_styles/normal = SubResource( 6 )
+custom_fonts/font = SubResource( 7 )
+custom_colors/font_color = Color( 0, 0, 0, 1 )
 custom_colors/font_color_hover = Color( 0.819608, 0.0784314, 0.0784314, 1 )
 text = "Play"
 __meta__ = {
@@ -127,22 +127,18 @@ margin_top = -154.0
 margin_right = 124.5
 margin_bottom = -80.0
 rect_scale = Vector2( 1, 1.01736 )
-custom_styles/hover = SubResource( 7 )
-custom_styles/pressed = SubResource( 10 )
-custom_styles/focus = SubResource( 9 )
-custom_styles/normal = SubResource( 8 )
-custom_fonts/font = SubResource( 11 )
-custom_colors/font_color = Color( 1, 1, 1, 1 )
+custom_styles/hover = SubResource( 3 )
+custom_styles/pressed = SubResource( 4 )
+custom_styles/focus = SubResource( 5 )
+custom_styles/normal = SubResource( 6 )
+custom_fonts/font = SubResource( 7 )
+custom_colors/font_color = Color( 0, 0, 0, 1 )
 custom_colors/font_color_hover = Color( 0.819608, 0.0784314, 0.0784314, 1 )
-shortcut = SubResource( 5 )
+shortcut = SubResource( 8 )
 text = "Tutorial"
 __meta__ = {
 "_edit_use_anchors_": false
 }
-
-[node name="TutorialTimer" type="Timer" parent="."]
-wait_time = 0.5
-one_shot = true
 
 [node name="ExitButton" type="Button" parent="."]
 anchor_left = 0.5
@@ -153,14 +149,14 @@ margin_left = -124.5
 margin_top = -74.0
 margin_right = 124.5
 rect_scale = Vector2( 1, 1.01736 )
-custom_styles/hover = SubResource( 7 )
-custom_styles/pressed = SubResource( 10 )
-custom_styles/focus = SubResource( 9 )
-custom_styles/normal = SubResource( 8 )
-custom_fonts/font = SubResource( 11 )
-custom_colors/font_color = Color( 1, 1, 1, 1 )
+custom_styles/hover = SubResource( 3 )
+custom_styles/pressed = SubResource( 4 )
+custom_styles/focus = SubResource( 5 )
+custom_styles/normal = SubResource( 6 )
+custom_fonts/font = SubResource( 7 )
+custom_colors/font_color = Color( 0, 0, 0, 1 )
 custom_colors/font_color_hover = Color( 0.819608, 0.0784314, 0.0784314, 1 )
-shortcut = SubResource( 5 )
+shortcut = SubResource( 8 )
 text = "exit"
 __meta__ = {
 "_edit_use_anchors_": false
@@ -172,5 +168,4 @@ stream = ExtResource( 6 )
 [connection signal="pressed" from="StartButton" to="." method="_on_StartButton_pressed"]
 [connection signal="timeout" from="StartTimer" to="." method="_on_StartTimer_timeout"]
 [connection signal="pressed" from="TutorialButton" to="." method="_on_TutorialButton_pressed"]
-[connection signal="timeout" from="TutorialTimer" to="." method="_on_TutorialTimer_timeout"]
 [connection signal="pressed" from="ExitButton" to="." method="_on_ExitButton_pressed"]

@@ -2,15 +2,15 @@
 
 importer="texture"
 type="StreamTexture"
-path="res://.import/gridtest.png-34ba1c6a6a609c94c88a939281772ca9.stex"
+path="res://.import/boulderwarn2.png-c304aaae30cbc13598d74dad2b6fdfec.stex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://data/images/gridtest.png"
-dest_files=[ "res://.import/gridtest.png-34ba1c6a6a609c94c88a939281772ca9.stex" ]
+source_file="res://data/images/boulderwarn2.png"
+dest_files=[ "res://.import/boulderwarn2.png-c304aaae30cbc13598d74dad2b6fdfec.stex" ]
 
 [params]
 

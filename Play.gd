@@ -6,7 +6,7 @@ export (PackedScene) var Fall
 ################
 
 # Game Parameters (may edit here)
-var hpref=1 # starting health for player (must be <=5)
+var hpref=5 # starting health for player (must be <=5)
 var btmax = 1# beat time in seconds
 var bmin=1# min boulder number that can fall each beat (only if dorandomboulders)
 var bmax=4# max boulder number that can fall each beat (only if dorandomboulders)
@@ -22,6 +22,14 @@ var k: int
 var xglist=[80,240,400]# x-positions on grid
 var yglist=[80,240,400]# y-positions on grid
 
+# score and level
+var levelscores=[1,2,3]# scores needed to increases levels 
+var level=1# level index (starts at 1)
+var levelmax=len(levelscores)+1
+var score# player score (>=0), defined at game start
+var canchangelevel=true# can change level
+
+
 # player
 var ip = 1# player x-position index (0-2)
 var jp = 1# player y-position index (0-2)
@@ -30,8 +38,8 @@ var jpn = 1# where player wants to be next turn
 var sp = 0 # player state (0-4 for stand, aiming, hit, hitaiming, dead)
 var op = 0 # player orientation (0-3 for r,u,l,d)
 var hp # player health (>=0 and <=hpmax in HUD), defined at start game
-var score# player score (>=0), defined at game start
 var playercanmove=true # player can move or not
+var playerhpregen=false# player regens +1hp per turn (for tutorial)
 
 # boulders
 var sgb# grid boulder state as vector (0-3 for empty, warn, stand, decay), matrix made during init
@@ -112,9 +120,13 @@ func start():
 	$HUD.showscore(score)
 	# start the beat
 	$BeatTimer.start()
+	# Next level
+	$NextLevelText.show()
 
 # start a tutorial
 func start_tutorial():
+	# Select Sound
+	$SelectSound.play()
 	# reset player
 	ip=1#rng.randi_range(0,2)
 	jp=1#rng.randi_range(0,2)
@@ -128,37 +140,21 @@ func start_tutorial():
 	$HUD.showhealth(hp)
 	# player score
 	score=0
+	canchangelevel=false
+	$NextLevelText.hide()
 	$HUD.showscore(score)
 	# start the beat
 	$BeatTimer.start()
-	# no boulders
-
+	# messages
+	$HUD/HeadHUD.hide()
+	$HUD/DeadText.hide()
+	$HUD/TutorialText.show()
 	if Main.tutorialpart == 1: 
 		Main.tutorialdone=false
-		$HUD/Text.text="  Move around \n  with arrows"
+		$HUD/TutorialText.text="Welcome to Boulder Storm! Move around with the arrows or by swiping. "
 		dorandomboulders=false
 	elif Main.tutorialpart == 2:
-		$HUD/Text.text="  This is a \n  boulder"
-		playercanmove=false
-		ip=0
-		jp=1
-		$Player.place(ip,jp,sp,op)
-		dorandomboulders=false
-		boulderscandecay=false
-		addboulder(1,1)
-		setboulder(1,1,2)
-	elif Main.tutorialpart == 3:
-		$HUD/Text.text="Move towards it \nto smash it"
-		playercanmove=true
-		ip=0
-		jp=1
-		$Player.place(ip,jp,sp,op)
-		dorandomboulders=false
-		boulderscandecay=false
-		addboulder(1,1)
-		setboulder(1,1,2)
-	elif Main.tutorialpart == 4:
-		$HUD/Text.text="smash boulders \nto earn points"
+		$HUD/TutorialText.text="Smash boulders to earn points and pass levels. "
 		playercanmove=true
 		ip=0
 		jp=1
@@ -175,21 +171,43 @@ func start_tutorial():
 		setboulder(0,2,2)
 		addboulder(2,2)
 		setboulder(2,2,2)
-	elif Main.tutorialpart == 5:
-		$HUD/Text.text="Boulders fall \nstand and decay"
+		$HUD/BoulderHUD.show()
+		$HUD/BoulderCount.show()
+	elif Main.tutorialpart == 3:
+		$HUD/TutorialText.text="Boulders fall, then stand and eventually decay and disappear."
 		playercanmove=false
 		ip=0
 		jp=1
 		$Player.place(ip,jp,sp,op)
+		$Player.hide()
 		dorandomboulders=false
 		docyclicboulders=true
 		sgbnewcyclep[1][1]=2
-		sgbnewcyclet[1][1]=2
+#		sgbnewcyclet[1][1]=0
+		addboulder(1,1)
 	else:
 		Main.tutorialdone=true# tutorial done
+		$HUD/TutorialText.text="Falling boulders hurt the player. Decaying boulders can be stepped on. "
+		playercanmove=true
+		playerhpregen=true
+		ip=0
+		jp=1
+		$Player.place(ip,jp,sp,op)
+		$Player.show()
 		dorandomboulders=false
-		$HUD/Text.text="good luck "
-		$HUD/TutorialContinueButton.text='Exit'
+		docyclicboulders=true
+		sgbnewcyclep[1][1]=2
+		sgbnewcyclep[0][0]=2
+		sgbnewcyclep[0][2]=2
+		sgbnewcyclep[2][0]=2
+		sgbnewcyclep[2][2]=2
+		addboulder(1,1)
+		addboulder(0,0)
+		addboulder(0,2)
+		addboulder(2,0)
+		addboulder(2,2)
+		$HUD/TutorialContinueButton.text='Back'
+
 
 
 # exit scene if dead + end button pressed 
@@ -208,12 +226,49 @@ func _on_HUD_custom_on_TutorialContinueButton_pressed():
 	else:
 		Main.to_tutorial()
 
+# check if new level
+func checklevel():
+	if canchangelevel and level<levelmax:
+		if score>=levelscores[level-1]:
+			changelevel()
 
+#			
+
+# apply level changes
+func changelevel():
+	# increase level
+	level += 1
+	if level<levelmax:
+		$HUD/LevelCount.text='Level '+str(level)
+		$NextLevelText/NextLevelTextLabel.text='Level '+str(level)
+		$NextLevelSound.play()
+	else:
+		$HUD/LevelCount.text='Level Max'
+		$NextLevelText/NextLevelTextLabel.text='Level Max'
+	$NextLevelText.show()
+	$NextLevelTextTimer.start()# start timer to end next level text label display
+	# cleanup the board
+	removeallboulders()
+	removeallfalls()
+#	removeallsmokes()
+	# change game parameters depending on settings
+	if level == 1:
+		print('change me')
+#		$Background.color = Color(1, 0, 0, 1) # Set ColorRect's color to red.
+
+# next level message
+func _on_NextLevelTextTimer_timeout():
+	$NextLevelText.hide()
+	$NextLevelTextTimer.stop()
+
+	
 ###############
 
 # update
 func _process(delta):
 	orientplayer()
+	checklevel()
+	devcontrols()
 
 # when BeatTimer rings
 func beatrings():
@@ -225,6 +280,10 @@ func beatrings():
 	updatefalls()# update new/old falls
 	hitplayer()# hit player if on boulder spot
 
+# developper controls
+func devcontrols():
+	if Input.is_action_pressed("ui_select"):
+		Main.to_start()
 
 ###############
 # player
@@ -454,6 +513,12 @@ func hitplayer():
 		# player dies
 		else:
 			die()	
+	# player regenerates health (for tutorial)
+	if playerhpregen == true:
+		if hp<hpref:
+			hp += 1
+			$HUD.showhealth(hp)
+		
 
 # die 
 func die():
@@ -495,7 +560,7 @@ func setboulder(ib,jb,sb):
 # remove boulder from scene at given location
 func removeboulder(ib,jb):
 	sgb[ib][jb]=0
-	if str(ib)+str(jb) in sgbd.keys():
+	if sgbd[str(ib)+str(jb)]:
 		sgbd[str(ib)+str(jb)].kill()# kill
 
 # remove all boulders
@@ -523,9 +588,11 @@ func setsmoke(ib,jb,sb):
 
 # remove smoke from scene at given location
 func removesmoke(ib,jb):
+	if sgs[ib][jb] != 0:
+		if sgsd[str(ib)+str(jb)]:
+			sgsd[str(ib)+str(jb)].kill()# kill
 	sgs[ib][jb]=0
-	if str(ib)+str(jb) in sgsd.keys():
-		sgsd[str(ib)+str(jb)].kill()# kill 
+
 
 # remove all smokes
 func removeallsmokes():
@@ -552,7 +619,7 @@ func setfall(ib,jb,sb):
 # remove fall from scene at given location
 func removefall(ib,jb):
 	sgf[ib][jb]=0
-	if str(ib)+str(jb) in sgfd.keys():
+	if sgfd[str(ib)+str(jb)]:
 		sgfd[str(ib)+str(jb)].kill()# kill 
 
 # remove all falls
@@ -577,4 +644,12 @@ func getneighbors(index):
 	if index == 8: return [5,7] # bottom right
 
 ###############
+
+
+
+
+
+
+
+
 

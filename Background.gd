@@ -25,7 +25,7 @@ func changecolor():
 	var btmax=get_owner().get_node("BeatTimer").get_wait_time()
 	cr = bt/btmax*cfact +(1-cfact)
 	cg = bt/btmax*cfact +(1-cfact)
-#	cb = -bt/btmax*cfact +(1+cfact)
+	cb = bt/btmax*cfact +(1+cfact)
 
 ################
 

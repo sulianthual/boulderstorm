@@ -10,6 +10,9 @@ var dxhp=50
 var yhp0=530
 var dyhp=0
 var hpd={}# dictionary of heart instances (labelled as "i")
+var hdshow=true# show the hp head
+var hpshow=true# show the hp hearts (can be toggled)
+
 
 ################
 
@@ -40,30 +43,36 @@ func start():
 	$BoulderCount.text="0"
 	$BoulderCount.rect_position.x=100
 	$BoulderCount.rect_position.y=585
+	# Level
+	$LevelCount.text='Level 1'
+	$LevelCount.show()
 	# Dead message
-	$Text.hide()
+	$DeadText.hide()
 	$EndButton.hide()
-	# Continue 
+	# Tutorial
+	$TutorialText.hide()
 	$TutorialContinueButton.hide()
 
 # tutorial start
 func start_tutorial():
-	# head
-	$HeadHUD.hide()
 	# hearts
-#	for k in range(hpmax):
-#		addheart(k)
-#		setheart(k,0)#hide
+	hpshow=false# put hearts but hide them
+	for k in range(hpmax):
+		addheart(k)
+		setheart(k,0)#hide
 	# score (boulder count)
 	$BoulderHUD.hide()
 	$BoulderCount.hide()
+	$LevelCount.hide()
 	$EndButton.hide()
-	# Continue 
+	$DeadText.hide()
+	# Tutorial 
 	$TutorialContinueButton.hide()
 	$TutorialContinueTimer.start()
 	# Text
-	$Text.show()
-	$Text.align=Label.ALIGN_FILL
+	$TutorialText.hide()
+	$TutorialText.align=Label.ALIGN_FILL
+
 
 # Continue tutorial button appears
 func _on_TutorialContinueTimer_timeout():
@@ -99,9 +108,9 @@ func showscore(score):
 	$BoulderCount.text=str(score)
 
 func showdeadmessage(score):
-	$Text.show()
-	$Text.align=Label.ALIGN_CENTER
-	$Text.text='You Died  \nScore: '+str(score)
+	$DeadText.show()
+	$DeadText.align=Label.ALIGN_CENTER
+	$DeadText.text='You Died  \nScore: '+str(score)
 	$EndButton.show()
 	# hide the rest
 	$BoulderCount.hide()
@@ -119,12 +128,15 @@ func addheart(kb):
 
 # (re)set boulder position and state (0-1 for hide,show)
 func setheart(kb,sp):
+	if hpshow == false:
+		sp=0
 	if str(kb) in hpd.keys():
 		hpd[str(kb)].place( kb*dxhp+xhp0,kb*dyhp+yhp0,sp)
+			
 
 # remove heart from scene (shouldnt be used, hide the heart instead)
 func removeheart(kb):
-	if str(kb) in hpd.keys():
+	if hpd[str(kb)]:
 		hpd[str(kb)].kill()# kill heart
 
 
