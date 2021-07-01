@@ -29,6 +29,10 @@ func place(ib,jb,sb):
 		show()
 		$AnimatedSprite.animation="fall"
 
+# Change animation speed
+func setspeedscale(speedscale):
+	$AnimatedSprite.set_speed_scale(speedscale)# speed up animations
+	
 # kill fall (and all its potential childrens)
 func kill():
 	for child in get_children():

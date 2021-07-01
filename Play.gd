@@ -7,7 +7,7 @@ export (PackedScene) var Fall
 
 # Game Parameters (may edit here)
 var hpref: int=5 # starting health for player (must be <=5)
-var levelscores=[1,2,3,4,5]# scores needed to increases each level
+var levelscores=[3,8,15,24,35]# scores needed to increases each level
 var btmax: float = 1# max beat time in seconds (at level 1)
 var btmin: float = 0.6# min beat time in seconds (at max level)
 var bminlvlmin: int =1 # min boulder number that can randomly fall each beat (at min level)
@@ -47,6 +47,7 @@ var op: int = 0 # player orientation (0-3 for r,u,l,d)
 var hp: int # player health (>=0 and <=hpmax in HUD), defined at start game
 var playercanmove=true # player can move or not
 var playerhpregen=false# player regens +1hp per turn (for tutorial)
+var playercanjump=true# player has reloaded and can jump (on timer)
 
 # boulders
 var bmin: int=bminlvlmin# current min boulder number that can randomly fall each beat 
@@ -120,6 +121,7 @@ func start():
 	sp=0
 	op=0
 	$Player.place(ip,jp,sp,op)
+	$Player.setspeedscale(btmax/btnow)
 	# player hp
 	hp=hpref
 	$HUD.showhealth(hp)
@@ -281,6 +283,8 @@ func changelevel():
 		# randomized boulders
 		bmin=bminlvlmax
 		bmax=bmaxlvlmax
+	# Faster animations
+	$Player.setspeedscale(btmax/btnow)
 		
 		
 # next level message
@@ -314,9 +318,8 @@ func beatrings():
 func devcontrols():
 	if Input.is_action_pressed("ui_select"):
 		Main.to_start()
-	#
 #	print($BeatTimer.wait_time)
-	print(str(bmin)+' '+str(bmax))
+#	print(str(bmin)+' '+str(bmax))
 ###############
 # player
 
@@ -330,41 +333,74 @@ func orientplayer():
 					sp=1# to aim
 				elif sp == 2:# hit
 					sp=3# to hitaim
-				op=0
-				$Player.place(ip,jp,sp,op)
 				ipn=ip+1
 				jpn=jp
+			else:
+				if sp == 1:# cancel jump
+					sp=0
+				elif sp == 3:
+					sp=2
+				ipn=ip
+				jpn=jp
+			op=0
+			$Player.place(ip,jp,sp,op)
+
 		elif Input.is_action_pressed("ui_up"):
 			if jp>0: 
 				if sp == 0:# stand
 					sp=1# to aim
 				elif sp == 2:# hit
 					sp=3# to hitaim
-				op=1
-				$Player.place(ip,jp,sp,op)
 				ipn=ip
 				jpn=jp-1
+			else:
+				if sp == 1:# cancel jump
+					sp=0
+				elif sp == 3:
+					sp=2
+				ipn=ip
+				jpn=jp
+			op=1
+			$Player.place(ip,jp,sp,op)
+			
 		elif Input.is_action_pressed("ui_left"):
 			if ip>0: 
 				if sp == 0:# stand
 					sp=1# to aim
 				elif sp == 2:# hit
 					sp=3# to hitaim
-				op=2
-				$Player.place(ip,jp,sp,op)
 				ipn=ip-1
 				jpn=jp
+			else:
+				if sp == 1:# cancel jump
+					sp=0
+				elif sp == 3:
+					sp=2
+				ipn=ip
+				jpn=jp
+			op=2
+			$Player.place(ip,jp,sp,op)
+
 		elif Input.is_action_pressed("ui_down"):
 			if jp<2: 
 				if sp == 0:# stand
 					sp=1# to aim
 				elif sp == 2:# hit
 					sp=3# to hitaim
-				op=3
-				$Player.place(ip,jp,sp,op)
 				ipn=ip
 				jpn=jp+1
+			else:
+				if sp == 1:# cancel jump
+					sp=0
+				elif sp == 3:
+					sp=2
+				ipn=ip
+				jpn=jp
+			op=3
+			$Player.place(ip,jp,sp,op)
 
+
+	
 # update the player during beatring
 func moveplayer():
 	# Player wants to stay in place
@@ -582,6 +618,7 @@ func die():
 func addboulder(ib,jb):
 	var boulder=Boulder.instance()
 	add_child(boulder)# add to scene
+	boulder.setspeedscale(btmax/btnow)
 	sgbd[str(ib)+str(jb)]=boulder# add to boulder instances dictionary
 	setboulder(ib,jb,1)
 	
@@ -610,6 +647,7 @@ func removeallboulders():
 func addsmoke(ib,jb):
 	var smoke=Smoke.instance()
 	add_child(smoke)# add to scene
+	smoke.setspeedscale(btmax/btnow)
 	smoke.set_z_index(2)# put in front/ front
 	sgsd[str(ib)+str(jb)]=smoke# add to smoke instances dictionary
 	setsmoke(ib,jb,1)
@@ -640,6 +678,7 @@ func removeallsmokes():
 func addfall(ib,jb):
 	var fall=Fall.instance()
 	add_child(fall)# add to scene
+	fall.setspeedscale(btmax/btnow)
 	fall.set_z_index(1)# put in front
 	sgfd[str(ib)+str(jb)]=fall# add to fall instances dictionary
 	setfall(ib,jb,1)
@@ -677,6 +716,12 @@ func getneighbors(index):
 	if index == 8: return [5,7] # bottom right
 
 ###############
+
+
+
+
+
+
 
 
 

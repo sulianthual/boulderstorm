@@ -32,6 +32,10 @@ func place(ib,jb,sb):
 	else:
 		hide()
 
+# Change animation speed
+func setspeedscale(speedscale):
+	$AnimatedSprite.set_speed_scale(speedscale)# speed up animations
+	
 # kill boulder (and all its potential childrens)
 func kill():
 	for child in get_children():

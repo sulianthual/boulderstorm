@@ -21,6 +21,10 @@ func place(xb,yb,sb):
 		show()
 		$AnimatedSprite.animation="heart"
 
+# Change animation speed
+func setspeedscale(speedscale):
+	$AnimatedSprite.set_speed_scale(speedscale)# speed up animations
+	
 # kill smoke (and all its potential childrens)
 func kill():
 	for child in get_children():

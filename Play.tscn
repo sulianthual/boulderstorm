@@ -50,9 +50,6 @@ __meta__ = {
 
 [node name="BeatTimer" type="Timer" parent="."]
 
-[node name="PlayerTimer" type="Timer" parent="."]
-wait_time = 0.8
-
 [node name="Player" parent="." instance=ExtResource( 7 )]
 position = Vector2( 240, 240 )
 scale = Vector2( 0.75, 0.75 )

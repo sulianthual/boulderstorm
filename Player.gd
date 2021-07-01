@@ -132,6 +132,9 @@ func place(ip,jp,sp,op):
 	else:
 		hide()
 
+# Change animation speed
+func setspeedscale(speedscale):
+	$AnimatedSprite.set_speed_scale(speedscale)# speed up animations
 	
 ################
 
