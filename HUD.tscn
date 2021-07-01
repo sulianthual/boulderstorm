@@ -1,0 +1,133 @@
+[gd_scene load_steps=13 format=2]
+
+[ext_resource path="res://HUD.gd" type="Script" id=1]
+[ext_resource path="res://data/fonts/karmatic-arcade.ttf" type="DynamicFontData" id=2]
+[ext_resource path="res://Heart.tscn" type="PackedScene" id=3]
+[ext_resource path="res://data/images/headhud.png" type="Texture" id=4]
+[ext_resource path="res://data/images/boulderhud.png" type="Texture" id=5]
+
+[sub_resource type="SpriteFrames" id=2]
+animations = [ {
+"frames": [ ExtResource( 4 ) ],
+"loop": true,
+"name": "base",
+"speed": 5.0
+} ]
+
+[sub_resource type="SpriteFrames" id=3]
+animations = [ {
+"frames": [ ExtResource( 5 ) ],
+"loop": true,
+"name": "base",
+"speed": 5.0
+} ]
+
+[sub_resource type="DynamicFont" id=11]
+size = 40
+extra_spacing_top = 5
+extra_spacing_bottom = 15
+font_data = ExtResource( 2 )
+
+[sub_resource type="StyleBoxEmpty" id=7]
+
+[sub_resource type="StyleBoxEmpty" id=10]
+
+[sub_resource type="StyleBoxEmpty" id=9]
+
+[sub_resource type="StyleBoxEmpty" id=8]
+
+[node name="HUD" type="CanvasLayer"]
+script = ExtResource( 1 )
+Heart = ExtResource( 3 )
+
+[node name="HeadHUD" type="AnimatedSprite" parent="."]
+frames = SubResource( 2 )
+animation = "dead"
+
+[node name="BoulderHUD" type="AnimatedSprite" parent="."]
+position = Vector2( 50, 610 )
+scale = Vector2( 0.6, 0.6 )
+frames = SubResource( 3 )
+animation = "base"
+
+[node name="BoulderCount" type="Label" parent="."]
+margin_left = 100.0
+margin_top = 585.0
+margin_right = 135.0
+margin_bottom = 646.0
+custom_fonts/font = SubResource( 11 )
+text = "0"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Text" type="Label" parent="."]
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+margin_left = -231.0
+margin_top = 142.0
+margin_right = 231.0
+margin_bottom = 277.0
+custom_fonts/font = SubResource( 11 )
+custom_colors/font_color = Color( 0, 0, 0, 1 )
+text = "you died 
+score "
+align = 3
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="EndButton" type="Button" parent="."]
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+margin_left = -106.0
+margin_top = -88.0001
+margin_right = 106.0
+margin_bottom = -14.0001
+rect_scale = Vector2( 1, 1.01736 )
+custom_styles/hover = SubResource( 7 )
+custom_styles/pressed = SubResource( 10 )
+custom_styles/focus = SubResource( 9 )
+custom_styles/normal = SubResource( 8 )
+custom_fonts/font = SubResource( 11 )
+custom_colors/font_color = Color( 1, 1, 1, 1 )
+custom_colors/font_color_hover = Color( 0.819608, 0.0784314, 0.0784314, 1 )
+text = "Exit"
+__meta__ = {
+"_edit_use_anchors_": false,
+"_editor_description_": ""
+}
+
+[node name="TutorialContinueButton" type="Button" parent="."]
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+margin_left = -128.5
+margin_top = -88.0
+margin_right = 128.5
+margin_bottom = -14.0
+rect_scale = Vector2( 1, 1.01736 )
+custom_styles/hover = SubResource( 7 )
+custom_styles/pressed = SubResource( 10 )
+custom_styles/focus = SubResource( 9 )
+custom_styles/normal = SubResource( 8 )
+custom_fonts/font = SubResource( 11 )
+custom_colors/font_color = Color( 1, 1, 1, 1 )
+custom_colors/font_color_hover = Color( 0.819608, 0.0784314, 0.0784314, 1 )
+text = "Continue"
+__meta__ = {
+"_edit_use_anchors_": false,
+"_editor_description_": ""
+}
+
+[node name="TutorialContinueTimer" type="Timer" parent="."]
+wait_time = 0.1
+
+[connection signal="pressed" from="EndButton" to="." method="_on_EndButton_pressed"]
+[connection signal="pressed" from="TutorialContinueButton" to="." method="_on_TutorialContinueButton_pressed"]
+[connection signal="timeout" from="TutorialContinueTimer" to="." method="_on_TutorialContinueTimer_timeout"]
