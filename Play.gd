@@ -7,14 +7,16 @@ export (PackedScene) var Fall
 
 # Game Parameters (may edit here)
 var hpref: int=7 # starting health for player (must be <=5)
-var levelscores=[3,8,15,24,35,48,61,76]# scores needed to increases each level
-#var levelscores=[1,2,3,4,5]# scores needed to increases each level
+var levelscores=[3,8,15,24,35,48,61,76,93]# scores needed to increases each level
+#var levelscores=[1,2,3,4,5,6,7,8,9]# scores needed to increases each level
 var btmax: float = 1# max beat time in seconds (at level 1)
-var btmin: float = 0.6# min beat time in seconds (at max level)
-var bminlvlmin: int =1 # min boulder number that can randomly fall each beat (at min level)
+var btmin: float = 0.5# min beat time in seconds (at max level)
+var bminlvlmin: int =0 # min boulder number that can randomly fall each beat (at min level)
 var bmaxlvlmin: int =3 # max boulder number that can randomly fall each beat (at min level)
 var bminlvlmax: int =1 # min boulder (at max level)
-var bmaxlvlmax: int =9 # max boulder (at max level)
+var bmaxlvlmax: int =7 # max boulder (at max level)
+#
+var bnone: float=0.1# change that no new boulder at all during one round
 
 
 ################
@@ -287,16 +289,16 @@ func changelevel():
 	if level<levelmax:
 		# background color (linear)
 		var tempo=float(level)/float(levelmax)
-		$GridColor.color = Color(1, 1-tempo*0.9, 1-tempo*0.9, 1-tempo*0.5) # to red
+		$GridColor.color = Color(1, 1-tempo*0.9, 1-tempo*0.9, tempo*0.9) # to red
 		# beat speed (power law, est )
 		btnow=btmax*pow(btmin/btmax,float(level-1)/float(levelmax-1))
 		$BeatTimer.wait_time= btnow
 		# randomized boulders (linear)
-		bmin = int( bminlvlmin+float(level)/float(levelmax)*(bminlvlmax-bminlvlmin) )
-		bmax = int( bmaxlvlmin+float(level)/float(levelmax)*(bmaxlvlmax-bmaxlvlmin) )
+		bmin = int(round( bminlvlmin+float(level)/float(levelmax)*(bminlvlmax-bminlvlmin) ))
+		bmax = int(round( bmaxlvlmin+float(level)/float(levelmax)*(bmaxlvlmax-bmaxlvlmin) ))
 	else:
 		# background color
-		$GridColor.color = Color(1, 1-0.9, 1-0.9, 0.5) # alsmot red
+		$GridColor.color = Color(1, 1-0.9, 1-0.9, 0.9) # alsmot red
 		# beat speed
 		btnow=btmin
 		$BeatTimer.wait_time=btnow
@@ -456,7 +458,6 @@ func moveplayer():
 		ipn=ip
 		jpn=jp
 		sp=0# revert to stand
-		op=0
 		$Player.place(ip,jp,sp,op)
 	# Player is hurt / wants to move
 	elif sp == 3:
@@ -485,11 +486,14 @@ func makenewboulders():
 	sgbnew=matrix3x3fill(sgbnew,0)
 	# method: random boulders each turn
 	if dorandomboulders: 
-		var newb=rng.randi_range(bmin,bmax)
-		for n in range(newb):
-			var newi=rng.randi_range(0,2)
-			var newj=rng.randi_range(0,2)
-			sgbnew[newi][newj]=1
+		if rng.randf()>bnone:# small odds of no new boulders
+			var newb=rng.randi_range(bmin,bmax)
+			for n in range(newb):
+				var newi=rng.randi_range(0,2)
+				var newj=rng.randi_range(0,2)
+				sgbnew[newi][newj]=1
+			
+			
 	if docyclicboulders:
 		for i in range(3):
 			for j in range(3):
@@ -644,18 +648,19 @@ func allsounds():
 		$Player/DeathSound.play()
 	elif playerwasjusthit==true:
 		$Player/HurtSound.play()
-	elif aboulderwascracked==true:
+	if aboulderwascracked==true:
 		$Player/CrackSound.play()
+		$Player/CoinSound.play()
 	elif playerhasdashed == true:
 		$Player/DashSound.play()
-	else:
-		# environment sounds
-		if aboulderisincoming==true:
-			$WarnSound.play()
-		if aboulderisfalling == true:
-			$FallSound.play()
-		if aboulderhasdecayed==true:
-			$DecaySound.play()
+
+	# environment sounds
+	if aboulderisincoming==true:
+		$WarnSound.play()
+	if aboulderisfalling == true:
+		$FallSound.play()
+	if aboulderhasdecayed==true:
+		$DecaySound.play()
 		
 
 	# reset triggers
