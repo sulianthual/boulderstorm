@@ -1,4 +1,4 @@
-[gd_scene load_steps=16 format=2]
+[gd_scene load_steps=17 format=2]
 
 [ext_resource path="res://HUD.gd" type="Script" id=1]
 [ext_resource path="res://data/fonts/karmatic-arcade.ttf" type="DynamicFontData" id=2]
@@ -23,6 +23,13 @@ animations = [ {
 "speed": 5.0
 } ]
 
+[sub_resource type="DynamicFont" id=10]
+size = 40
+outline_size = 6
+extra_spacing_top = 5
+extra_spacing_bottom = 15
+font_data = ExtResource( 2 )
+
 [sub_resource type="DynamicFont" id=3]
 size = 40
 extra_spacing_top = 5
@@ -43,8 +50,9 @@ font_data = ExtResource( 6 )
 
 [sub_resource type="StyleBoxEmpty" id=8]
 
-[sub_resource type="DynamicFont" id=9]
+[sub_resource type="DynamicFont" id=11]
 size = 40
+outline_size = 4
 extra_spacing_top = 5
 extra_spacing_bottom = 15
 font_data = ExtResource( 2 )
@@ -67,7 +75,7 @@ margin_left = 100.0
 margin_top = 585.0
 margin_right = 135.0
 margin_bottom = 646.0
-custom_fonts/font = SubResource( 3 )
+custom_fonts/font = SubResource( 10 )
 custom_colors/font_color = Color( 0, 0, 0, 1 )
 text = "0"
 __meta__ = {
@@ -163,7 +171,7 @@ margin_left = 27.0
 margin_top = 650.0
 margin_right = 454.0
 margin_bottom = 716.0
-custom_fonts/font = SubResource( 9 )
+custom_fonts/font = SubResource( 11 )
 custom_colors/font_color = Color( 0, 0, 0, 1 )
 text = "Level"
 __meta__ = {

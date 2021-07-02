@@ -8,17 +8,19 @@ export (PackedScene) var Arrow
 ################
 
 # Game Parameters (may edit here)
-var hpref: int=7 # starting health for player (must be <=5)
+var hpref: int=7 # starting health for player, and maximum (must be <=7)
 var levelscores=[3,8,15,24,35,48,61,76,93]# scores needed to increases each level
 #var levelscores=[1,2,3,4,5,6,7,8,9]# scores needed to increases each level
 var btmax: float = 1# max beat time in seconds (at level 1)
 var btmin: float = 0.5# min beat time in seconds (at max level)
 var bminlvlmin: int =0 # min boulder number that can randomly fall each beat (at min level)
-var bmaxlvlmin: int =3 # max boulder number that can randomly fall each beat (at min level)
+var bmaxlvlmin: int =3 # max boulder number that can randomly fall each beat (at max level)
 var bminlvlmax: int =1 # min boulder (at max level)
 var bmaxlvlmax: int =7 # max boulder (at max level)
 var bnone: float=0.1# change that no new boulder at all during one round
-
+var bheartchancelvlmin: float=0.25# change that a boulder turns into a heart (min level)
+var bheartchancelvlmax: float=0.1# change that a boulder turns into a heart (max level)
+var bheartchance: float=bheartchancelvlmin# change that a boulder turns into a heart
 
 ################
 # utils
@@ -184,12 +186,18 @@ func start_tutorial():
 	$HUD/HeadHUD.hide()
 	$HUD/DeadText.hide()
 	$HUD/TutorialText.show()
+	# heart chance
+	bheartchance=0
 	if Main.tutorialpart == 1: 
 		Main.tutorialdone=false
-		$HUD/TutorialText.text="Welcome to Boulder Storm! Move around with the arrows or by swiping. "
+		$HUD/TutorialText.text="Welcome to Boulder Storm! Music from PlayonLoop.com (CC-BY 4), all sounds CC-0..."
 		dorandomboulders=false
-	elif Main.tutorialpart == 2:
-		$HUD/TutorialText.text="Smash boulders to earn points and pass levels. "
+	elif Main.tutorialpart == 2: 
+		Main.tutorialdone=false
+		$HUD/TutorialText.text="... a game by Sulian Thual (2021). Move around with the arrows or by swiping. "
+		dorandomboulders=false
+	elif Main.tutorialpart == 3:
+		$HUD/TutorialText.text="Smash boulders to earn points and pass levels."
 		playercanmove=true
 		ip=0
 		jp=1
@@ -208,7 +216,18 @@ func start_tutorial():
 		setboulder(2,2,2)
 		$HUD/BoulderHUD.show()
 		$HUD/BoulderCount.show()
-	elif Main.tutorialpart == 3:
+	elif Main.tutorialpart == 4:
+		bheartchance=1
+		$HUD/TutorialText.text="Some boulders have hearts that regenerate health."
+		playercanmove=true
+		ip=0
+		jp=1
+		$Player.place(ip,jp,sp,op)
+		dorandomboulders=false
+		boulderscandecay=false
+		addboulder(1,1)
+		setboulder(1,1,2)
+	elif Main.tutorialpart == 5:
 		$HUD/TutorialText.text="Boulders fall, then stand and eventually decay and disappear."
 		playercanmove=false
 		ip=0
@@ -246,6 +265,8 @@ func start_tutorial():
 		addboulder(0,2)
 		addboulder(2,0)
 		addboulder(2,2)
+
+
 		$HUD/TutorialContinueButton.text='Back'
 
 
@@ -302,6 +323,8 @@ func changelevel():
 		# randomized boulders (linear)
 		bmin = int(round( bminlvlmin+float(level)/float(levelmax)*(bminlvlmax-bminlvlmin) ))
 		bmax = int(round( bmaxlvlmin+float(level)/float(levelmax)*(bmaxlvlmax-bmaxlvlmin) ))
+		# heart drop chance
+		bheartchance = bheartchancelvlmin+float(level)/float(levelmax)*(bheartchancelvlmax-bheartchancelvlmin) 
 	else:
 		# background color
 		$GridColor.color = Color(1, 1-0.9, 1-0.9, 0.9) # alsmot red
@@ -311,9 +334,10 @@ func changelevel():
 		# randomized boulders
 		bmin=bminlvlmax
 		bmax=bmaxlvlmax
+		# heart drop chance
+		bheartchance=bheartchancelvlmax
 	# Faster animations
 	$Player.setspeedscale(btref/btnow)
-		
 		
 # next level message
 func _on_NextLevelTextTimer_timeout():
@@ -329,8 +353,6 @@ func _process(delta):
 	moveplayer() 
 	checklevel()
 	devcontrols()
-	
-	
 
 # when BeatTimer rings
 func beatrings():
@@ -393,6 +415,7 @@ func orientplayer():
 	
 # update the player during beatring
 func moveplayer():
+	getheart()
 	# Player wants to move
 	if sp ==1 and playercanjump:
 		playerjumpreload()
@@ -401,7 +424,11 @@ func moveplayer():
 			if sp == 1:
 				sp=0
 			$Player.place(ip,jp,sp,op)
-			removeboulder(ipn,jpn)# remove boulder
+			if rng.randf()<bheartchance:# small chance of creating heart
+				setboulder(ipn,jpn,4)# to heart
+			else:
+				removeboulder(ipn,jpn)# remove boulder
+				
 			addsmoke(ipn,jpn)# add smoke
 			addarrow(ip,jp,op)# add arrow
 			$Player/CrackSound.play()
@@ -421,6 +448,14 @@ func moveplayer():
 		jpn=jp
 		jpn=jp
 
+# get heart if stepping on one
+func getheart():
+	if sgb[ip][jp] == 4:# if step on heart
+		if hp<hpref:
+			hp += 1
+		$HUD.showhealth(hp)
+		$Player/HealSound.play()
+		removeboulder(ip,jp)# remove boulder
 
 # player starts reloading jump
 func playerjumpreload():
@@ -455,16 +490,16 @@ func makenewboulders():
 	# test:
 #	sgbnew=matrix3x3fill(sgbnew,1)
 
-
 # update boulders
 # sgb: grid boulder state as vector (0-3 for empty, warn, stand, decay)
 func updateboulders():
 	for i in range(3):
 		for j in range(3):
-			# boulder empty
-			if sgb[i][j] == 0:
+			# boulder empty (or heart)
+			if sgb[i][j] in [0,4]:
 				if sgbnew[i][j]==1:# new boulder
-					addboulder(i,j)# add boulder
+					if sgb[i][j]==0:
+						addboulder(i,j)# add boulder
 					setboulder(i,j,1)# to boulder warn
 			# boulder warn
 			elif sgb[i][j] == 1:
@@ -543,6 +578,9 @@ func hitplayer():
 			$Player/HitSound.play()
 			removeboulder(ip,jp)
 			removefall(ip,jp)# to remove fall
+			# cleanup the board
+			removeallboulders()
+			removeallfalls()
 		# player dies
 		else:
 			die()	
@@ -624,7 +662,7 @@ func removeboulder(ib,jb):
 func removeallboulders():
 	for i in range(3):
 		for j in range(3):
-			if sgb[i][j]>0:
+			if sgb[i][j] in [1,2,3]:# exclude 0 and 4
 				removeboulder(i,j)
 
 ###############

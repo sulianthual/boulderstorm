@@ -29,6 +29,9 @@ func place(ib,jb,sb):
 	elif sb == 3:
 		show()
 		$AnimatedSprite.animation="decay"
+	elif sb == 4:# heart (rare)
+		show()
+		$AnimatedSprite.animation="heart"
 	else:
 		hide()
 
