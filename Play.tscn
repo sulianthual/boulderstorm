@@ -1,4 +1,4 @@
-[gd_scene load_steps=18 format=2]
+[gd_scene load_steps=24 format=2]
 
 [ext_resource path="res://Boulder.tscn" type="PackedScene" id=1]
 [ext_resource path="res://data/audio/music.wav" type="AudioStream" id=2]
@@ -23,6 +23,22 @@ outline_size = 8
 extra_spacing_top = 5
 extra_spacing_bottom = 15
 font_data = ExtResource( 11 )
+
+[sub_resource type="StyleBoxEmpty" id=2]
+
+[sub_resource type="StyleBoxEmpty" id=3]
+
+[sub_resource type="StyleBoxEmpty" id=4]
+
+[sub_resource type="StyleBoxEmpty" id=5]
+
+[sub_resource type="DynamicFont" id=8]
+size = 30
+extra_spacing_top = 5
+extra_spacing_bottom = 15
+font_data = ExtResource( 11 )
+
+[sub_resource type="ShortCut" id=7]
 
 [node name="Play" type="Node"]
 script = ExtResource( 6 )
@@ -114,9 +130,33 @@ volume_db = -5.0
 stream = ExtResource( 14 )
 volume_db = -5.0
 
+[node name="ExitButton" type="Button" parent="."]
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+margin_left = -123.5
+margin_top = -56.0
+margin_right = 125.5
+margin_bottom = 18.0
+rect_scale = Vector2( 1, 1.01736 )
+custom_styles/hover = SubResource( 2 )
+custom_styles/pressed = SubResource( 3 )
+custom_styles/focus = SubResource( 4 )
+custom_styles/normal = SubResource( 5 )
+custom_fonts/font = SubResource( 8 )
+custom_colors/font_color = Color( 0, 0, 0, 1 )
+custom_colors/font_color_hover = Color( 0.819608, 0.0784314, 0.0784314, 1 )
+shortcut = SubResource( 7 )
+text = "exit"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
 [connection signal="timeout" from="BeatTimer" to="." method="beatrings"]
 [connection signal="timeout" from="PlayerHurtTimer" to="." method="_on_PlayerHurtTimer_timeout"]
 [connection signal="timeout" from="PlayerJumpTimer" to="." method="_on_PlayerJumpTimer_timeout"]
 [connection signal="custom_on_EndButton_pressed" from="HUD" to="." method="_on_HUD_custom_on_EndButton_pressed"]
 [connection signal="custom_on_TutorialContinueButton_pressed" from="HUD" to="." method="_on_HUD_custom_on_TutorialContinueButton_pressed"]
 [connection signal="timeout" from="NextLevelTextTimer" to="." method="_on_NextLevelTextTimer_timeout"]
+[connection signal="pressed" from="ExitButton" to="." method="_on_ExitButton_pressed"]

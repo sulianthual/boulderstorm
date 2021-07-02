@@ -37,14 +37,14 @@ func start():
 		setheart(k,0)#hide
 	# score (boulder count)
 	$BoulderHUD.animation="base"
-	$BoulderHUD.scale= Vector2(0.6,0.6)# change scale
-	$BoulderHUD.position.x= 50
-	$BoulderHUD.position.y= 610
+	$BoulderHUD.scale= Vector2(0.75,0.75)# change scale
+#	$BoulderHUD.position.x= 50
+#	$BoulderHUD.position.y= 610
 	$BoulderCount.text="0"
-	$BoulderCount.rect_position.x=100
-	$BoulderCount.rect_position.y=585
+#	$BoulderCount.rect_position.x=100
+#	$BoulderCount.rect_position.y=585
 	# Level
-	$LevelCount.text='Level 1'
+	$LevelCount.text='Lvl 1'
 	$LevelCount.show()
 	# Dead message
 	$DeadText.hide()

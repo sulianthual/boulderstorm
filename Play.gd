@@ -154,6 +154,8 @@ func start():
 	$NextLevelText.show()
 	# music
 	$PlayMusic.play()
+	#exit
+	$ExitButton.show()
 
 # start a tutorial
 func start_tutorial():
@@ -182,6 +184,8 @@ func start_tutorial():
 	$BeatTimer.start()
 	# music
 	$PlayMusic.stop()
+	# exit
+	$ExitButton.hide()
 	# messages
 	$HUD/HeadHUD.hide()
 	$HUD/DeadText.hide()
@@ -265,8 +269,6 @@ func start_tutorial():
 		addboulder(0,2)
 		addboulder(2,0)
 		addboulder(2,2)
-
-
 		$HUD/TutorialContinueButton.text='Back'
 
 
@@ -276,8 +278,12 @@ func _on_HUD_custom_on_EndButton_pressed():
 	if sp==4:
 		endgame()
 
-# restart new game (end of dead timer)
+# end of game (dead)
 func endgame():
+	Main.to_start()# to titlescreen
+
+# Press exit button
+func _on_ExitButton_pressed():
 	Main.to_start()# to titlescreen
 
 # next step of tutorial
@@ -300,11 +306,11 @@ func changelevel():
 	# increase level
 	level += 1
 	if level<levelmax:
-		$HUD/LevelCount.text='Level '+str(level)
+		$HUD/LevelCount.text='Lvl '+str(level)
 		$NextLevelText/NextLevelTextLabel.text='Level '+str(level)
 		$NextLevelSound.play()
 	else:
-		$HUD/LevelCount.text='Level Max'
+		$HUD/LevelCount.text='Lvl Max'
 		$NextLevelText/NextLevelTextLabel.text='Level Max'
 	$NextLevelText.show()
 	$NextLevelTextTimer.start()# start timer to end next level text label display
@@ -367,10 +373,10 @@ func beatrings():
 
 # developper controls
 func devcontrols():
-	if Input.is_action_pressed("ui_select"):
-		Main.to_start()
-#	print($BeatTimer.wait_time)
-#	print(str(bmin)+' '+str(bmax))
+	pass
+#	if Input.is_action_pressed("ui_select"):
+#		Main.to_start()
+
 ###############
 # player
 
@@ -615,7 +621,9 @@ func die():
 	# Stop Play Music
 	$PlayMusic.stop()
 	$Player/DeathSound.play()
-
+	#exit
+	$ExitButton.hide()
+	
 # play various sounds during one round (in order of importance)
 func allsounds():
 	# environment sounds
@@ -747,6 +755,9 @@ func getneighbors(index):
 	if index == 8: return [5,7] # bottom right
 
 ###############
+
+
+
 
 
 

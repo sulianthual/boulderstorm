@@ -17,12 +17,13 @@ func _process(delta):
 
 # developper controls
 func devcontrols():
-	if Input.is_action_pressed("ui_up"):
-		Main.to_play()
-	elif Input.is_action_pressed("ui_left"):
-		Main.to_tutorial()
-	elif Input.is_action_pressed("ui_down"):
-		Main.to_quit()
+	pass
+#	if Input.is_action_pressed("ui_up"):
+#		Main.to_play()
+#	elif Input.is_action_pressed("ui_left"):
+#		Main.to_tutorial()
+#	elif Input.is_action_pressed("ui_down"):
+#		Main.to_quit()
 		
 # Start Game
 func _on_StartButton_pressed():
