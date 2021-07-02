@@ -21,6 +21,7 @@ var jptimelvlmin: float=0.25#0.3  time between player jumps (at min level)
 var jptimelvlmax: float=0.25*0.6#0.3*0.6  time between player jumps (at max level) (should follow btlvlmax)
 var btlvlmin: float = 1# max beat time in seconds (at min level)
 var btlvlmax: float = 0.6# min beat time in seconds (at max level)
+var playersafejump= false # player wont jump on a warning spot (but can still receive a boulder on head) (avoid, better to increase dash speed)
 # boulder rng
 var bminlvlmin: int =1 # min boulder number that can randomly fall each beat (at min level)
 var bmaxlvlmin: int =3 # max boulder number that can randomly fall each beat (at max level)
@@ -65,6 +66,7 @@ var hp: int # player health (>=0 and <=hpmax in HUD), defined at start game
 var playercanmove=true # player can move or not
 var playerhpregen=false# player regens +1hp per turn (for tutorial or dev)
 var playercanjump=true# player has reloaded and can jump (on timer)
+
 
 # boulders parameters
 var bnone: float=bnonelvlmin# small chance of no new boulder at all during one round
@@ -138,7 +140,7 @@ func start():
 	# Next level
 	$NextLevelText.show()
 	# music
-	if Main.domusic == true:
+	if Main.doaudio == true:
 		$PlayMusic.play()
 	#exit
 	$ExitButton.show()
@@ -298,13 +300,14 @@ func _on_HUD_custom_on_TutorialContinueButton_pressed():
 
 # update (every step)
 func _process(delta):
-	orientplayer() 
 	moveplayer() 
 	getheart()
 	checklevel()
 	devcontrols()
 
-
+# input detector
+func _input(event):
+	keyboardcontrols() 
 
 # Game update when BeatTimer rings
 # *BEAT
@@ -321,6 +324,7 @@ func beatrings():
 # *DEV
 func devcontrols():
 	pass
+#	print(Main.doaudio)
 	#
 	#  test beat changes
 #	var temp1=round(jptime*100)/100
@@ -343,11 +347,26 @@ func devcontrols():
 # Player controls
 #*PLAYER
 
-# orient the player (
-func orientplayer():
+# orient the player 
+func keyboardcontrols():
+	if Input.is_action_pressed("ui_right"):
+		setmoveplayer("right")
+	elif Input.is_action_pressed("ui_up"):
+		setmoveplayer("up")
+	elif Input.is_action_pressed("ui_left"):
+		setmoveplayer("left")
+	elif Input.is_action_pressed("ui_down"):
+		setmoveplayer("down")
+#
+# control player with swipes (on touchscreen)
+func _on_SwipeDetector_swiped(direction):
+	setmoveplayer(direction)
+
+# set a player move
+func setmoveplayer(direction):
 	# if stand, aim, hit or hitaiming
 	if sp in [0,1] and playercanmove and playercanjump:
-		if Input.is_action_pressed("ui_right"):
+		if direction=='right':
 			if ip<2: 
 				if sp == 0:# stand
 					sp=1# to aim
@@ -355,7 +374,7 @@ func orientplayer():
 				jpn=jp
 			op=0
 			$Player.place(ip,jp,sp,op)
-		elif Input.is_action_pressed("ui_up"):
+		elif direction=='up':
 			if jp>0: 
 				if sp == 0:# stand
 					sp=1# to aim
@@ -363,7 +382,7 @@ func orientplayer():
 				jpn=jp-1
 			op=1
 			$Player.place(ip,jp,sp,op)
-		elif Input.is_action_pressed("ui_left"):
+		elif direction=='left':
 			if ip>0: 
 				if sp == 0:# stand
 					sp=1# to aim
@@ -371,7 +390,7 @@ func orientplayer():
 				jpn=jp
 			op=2
 			$Player.place(ip,jp,sp,op)
-		elif Input.is_action_pressed("ui_down"):
+		elif direction=='down':
 			if jp<2: 
 				if sp == 0:# stand
 					sp=1# to aim
@@ -380,13 +399,14 @@ func orientplayer():
 			op=3
 			$Player.place(ip,jp,sp,op)
 
-# move the player
+
+# move the player (reload afterward)
 func moveplayer():
 	# Player wants to move
 	if sp ==1 and playercanjump:
-		playerjumpreload()
 		# boulder blocks the way (break it)
 		if sgb[ipn][jpn] == 2:
+			playerjumpreload()
 			if sp == 1:
 				sp=0
 			$Player.place(ip,jp,sp,op)
@@ -404,11 +424,16 @@ func moveplayer():
 			$HUD.showscore(score)
 		# otherwise move to spot
 		else:
-			ip=ipn
-			jp=jpn
-			sp=0
-			$Player.place(ip,jp,sp,op)
-			$Player/DashSound.play()
+			# there is a warning boulder at spot (player will be hurt)
+			if sgb[ipn][jpn] == 1 and playersafejump == true:# avoid jump with safe jump
+				$Player.place(ip,jp,sp,op)
+			else:
+				playerjumpreload()
+				ip=ipn
+				jp=jpn
+				sp=0
+				$Player.place(ip,jp,sp,op)
+				$Player/DashSound.play()
 		# update for next step
 		ipn=ip
 		jpn=jp
@@ -429,6 +454,8 @@ func getheart():
 	if sgb[ip][jp] == 4:# if step on heart
 		if hp<hpref:
 			hp += 1
+		else:
+			score += 1
 		$HUD.showhealth(hp)
 		$Player/HealSound.play()
 		removeboulder(ip,jp)# remove boulder
@@ -837,7 +864,3 @@ func ktoij(k):
 
 
 
-
-
-
-#

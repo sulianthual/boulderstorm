@@ -2,6 +2,7 @@ extends Node
 
 ################
 
+var doaudio=true
 var domusic= true # do audio
 
 var dotutorial=false# play tutorial

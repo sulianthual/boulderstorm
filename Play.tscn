@@ -1,4 +1,4 @@
-[gd_scene load_steps=24 format=2]
+[gd_scene load_steps=28 format=2]
 
 [ext_resource path="res://Boulder.tscn" type="PackedScene" id=1]
 [ext_resource path="res://data/audio/music.wav" type="AudioStream" id=2]
@@ -16,6 +16,9 @@
 [ext_resource path="res://data/audio/warn.wav" type="AudioStream" id=14]
 [ext_resource path="res://Blood.tscn" type="PackedScene" id=15]
 [ext_resource path="res://Arrow.tscn" type="PackedScene" id=16]
+[ext_resource path="res://data/images/soundicon_on.png" type="Texture" id=17]
+[ext_resource path="res://data/images/soundicon_off.png" type="Texture" id=18]
+[ext_resource path="res://SwipeDetector.gd" type="Script" id=19]
 
 [sub_resource type="DynamicFont" id=1]
 size = 50
@@ -39,6 +42,40 @@ extra_spacing_bottom = 15
 font_data = ExtResource( 11 )
 
 [sub_resource type="ShortCut" id=7]
+
+[sub_resource type="GDScript" id=8]
+script/source = "extends Node
+
+
+# Declare member variables here. Examples:
+# var a = 2
+# var b = \"text\"
+
+
+# Called when the node enters the scene tree for the first time.
+func _ready():
+	if Main.doaudio==true:
+		$AudioIconButton.set_pressed(false)
+	else:
+		$AudioIconButton.set_pressed(true)
+
+
+# Called every frame. 'delta' is the elapsed time since the previous frame.
+#func _process(delta):
+#	pass
+
+# toggle audio from icon
+func _on_AudioIconButton_toggled(button_pressed):
+	$AudioIconSound.play()
+	if button_pressed==true:
+		Main.doaudio=false
+	else:
+		Main.doaudio=true
+	if Main.doaudio ==false:
+		AudioServer.set_bus_mute(0, true)# mute audio bus 0
+	else:
+		AudioServer.set_bus_mute(0, false)# unmute audio bus 0
+"
 
 [node name="Play" type="Node"]
 script = ExtResource( 6 )
@@ -121,10 +158,10 @@ stream = ExtResource( 12 )
 
 [node name="FallSound" type="AudioStreamPlayer" parent="."]
 stream = ExtResource( 8 )
+volume_db = 5.0
 
 [node name="DecaySound" type="AudioStreamPlayer" parent="."]
 stream = ExtResource( 13 )
-volume_db = -5.0
 
 [node name="WarnSound" type="AudioStreamPlayer" parent="."]
 stream = ExtResource( 14 )
@@ -153,6 +190,32 @@ __meta__ = {
 "_edit_use_anchors_": false
 }
 
+[node name="AudioIcon" type="Node" parent="."]
+script = SubResource( 8 )
+
+[node name="AudioIconButton" type="TextureButton" parent="AudioIcon"]
+margin_left = 7.0
+margin_top = 684.0
+margin_right = 207.0
+margin_bottom = 884.0
+rect_scale = Vector2( 0.15, 0.15 )
+toggle_mode = true
+texture_normal = ExtResource( 17 )
+texture_pressed = ExtResource( 18 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="AudioIconSound" type="AudioStreamPlayer" parent="AudioIcon"]
+stream = ExtResource( 4 )
+
+[node name="SwipeDetector" type="Node" parent="."]
+script = ExtResource( 19 )
+
+[node name="SwipeTimer" type="Timer" parent="SwipeDetector"]
+wait_time = 0.5
+one_shot = true
+
 [connection signal="timeout" from="BeatTimer" to="." method="beatrings"]
 [connection signal="timeout" from="PlayerHurtTimer" to="." method="_on_PlayerHurtTimer_timeout"]
 [connection signal="timeout" from="PlayerJumpTimer" to="." method="_on_PlayerJumpTimer_timeout"]
@@ -160,3 +223,6 @@ __meta__ = {
 [connection signal="custom_on_TutorialContinueButton_pressed" from="HUD" to="." method="_on_HUD_custom_on_TutorialContinueButton_pressed"]
 [connection signal="timeout" from="NextLevelTextTimer" to="." method="_on_NextLevelTextTimer_timeout"]
 [connection signal="pressed" from="ExitButton" to="." method="_on_ExitButton_pressed"]
+[connection signal="toggled" from="AudioIcon/AudioIconButton" to="AudioIcon" method="_on_AudioIconButton_toggled"]
+[connection signal="swiped" from="SwipeDetector" to="." method="_on_SwipeDetector_swiped"]
+[connection signal="timeout" from="SwipeDetector/SwipeTimer" to="SwipeDetector" method="_on_SwipeTimer_timeout"]

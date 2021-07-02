@@ -18,6 +18,7 @@ func _process(delta):
 # developper controls
 func devcontrols():
 	pass
+
 #	if Input.is_action_pressed("ui_up"):
 #		Main.to_play()
 #	elif Input.is_action_pressed("ui_left"):

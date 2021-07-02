@@ -1,4 +1,4 @@
-[gd_scene load_steps=17 format=2]
+[gd_scene load_steps=21 format=2]
 
 [ext_resource path="res://data/images/player_right2.png" type="Texture" id=1]
 [ext_resource path="res://data/fonts/karmatic-arcade.ttf" type="DynamicFontData" id=2]
@@ -8,6 +8,9 @@
 [ext_resource path="res://data/audio/startgame.wav" type="AudioStream" id=6]
 [ext_resource path="res://data/images/grid.png" type="Texture" id=7]
 [ext_resource path="res://data/images/player_right1.png" type="Texture" id=8]
+[ext_resource path="res://data/images/soundicon_on.png" type="Texture" id=9]
+[ext_resource path="res://data/images/soundicon_off.png" type="Texture" id=10]
+[ext_resource path="res://data/audio/select.wav" type="AudioStream" id=11]
 
 [sub_resource type="DynamicFont" id=1]
 size = 70
@@ -36,6 +39,40 @@ extra_spacing_bottom = 15
 font_data = ExtResource( 2 )
 
 [sub_resource type="ShortCut" id=8]
+
+[sub_resource type="GDScript" id=9]
+script/source = "extends Node
+
+
+# Declare member variables here. Examples:
+# var a = 2
+# var b = \"text\"
+
+
+# Called when the node enters the scene tree for the first time.
+func _ready():
+	if Main.doaudio==true:
+		$AudioIconButton.set_pressed(false)
+	else:
+		$AudioIconButton.set_pressed(true)
+
+
+# Called every frame. 'delta' is the elapsed time since the previous frame.
+#func _process(delta):
+#	pass
+
+# toggle audio from icon
+func _on_AudioIconButton_toggled(button_pressed):
+	$AudioIconSound.play()
+	if button_pressed==true:
+		Main.doaudio=false
+	else:
+		Main.doaudio=true
+	if Main.doaudio ==false:
+		AudioServer.set_bus_mute(0, true)# mute audio bus 0
+	else:
+		AudioServer.set_bus_mute(0, false)# unmute audio bus 0
+"
 
 [node name="Start" type="Node"]
 script = ExtResource( 5 )
@@ -93,7 +130,7 @@ __meta__ = {
 position = Vector2( 240, 240 )
 scale = Vector2( 0.75, 0.75 )
 frames = SubResource( 2 )
-frame = 6
+frame = 4
 playing = true
 
 [node name="StartButton" type="Button" parent="."]
@@ -170,7 +207,27 @@ __meta__ = {
 [node name="StartSound" type="AudioStreamPlayer" parent="."]
 stream = ExtResource( 6 )
 
+[node name="AudioIcon" type="Node" parent="."]
+script = SubResource( 9 )
+
+[node name="AudioIconButton" type="TextureButton" parent="AudioIcon"]
+margin_left = 7.0
+margin_top = 684.0
+margin_right = 207.0
+margin_bottom = 884.0
+rect_scale = Vector2( 0.15, 0.15 )
+toggle_mode = true
+texture_normal = ExtResource( 9 )
+texture_pressed = ExtResource( 10 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="AudioIconSound" type="AudioStreamPlayer" parent="AudioIcon"]
+stream = ExtResource( 11 )
+
 [connection signal="pressed" from="StartButton" to="." method="_on_StartButton_pressed"]
 [connection signal="timeout" from="StartTimer" to="." method="_on_StartTimer_timeout"]
 [connection signal="pressed" from="TutorialButton" to="." method="_on_TutorialButton_pressed"]
 [connection signal="pressed" from="ExitButton" to="." method="_on_ExitButton_pressed"]
+[connection signal="toggled" from="AudioIcon/AudioIconButton" to="AudioIcon" method="_on_AudioIconButton_toggled"]

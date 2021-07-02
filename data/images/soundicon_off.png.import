@@ -2,15 +2,15 @@
 
 importer="texture"
 type="StreamTexture"
-path="res://.import/boulderfall6.png-89a52047f94146ce4564083560482d65.stex"
+path="res://.import/soundicon_off.png-3338b65e174c6a5a2494c5d0e5a115c3.stex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://data/images/boulderfall6.png"
-dest_files=[ "res://.import/boulderfall6.png-89a52047f94146ce4564083560482d65.stex" ]
+source_file="res://data/images/soundicon_off.png"
+dest_files=[ "res://.import/soundicon_off.png-3338b65e174c6a5a2494c5d0e5a115c3.stex" ]
 
 [params]
 

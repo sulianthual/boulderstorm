@@ -4,13 +4,13 @@
 [ext_resource path="res://data/images/boulderfall4.png" type="Texture" id=2]
 [ext_resource path="res://Fall.gd" type="Script" id=3]
 [ext_resource path="res://data/images/boulderfall2.png" type="Texture" id=4]
-[ext_resource path="res://data/images/boulderfall6.png" type="Texture" id=5]
+[ext_resource path="res://data/images/boulderfall0.png" type="Texture" id=5]
 [ext_resource path="res://data/images/boulderfall5.png" type="Texture" id=6]
 [ext_resource path="res://data/images/boulderfall1.png" type="Texture" id=8]
 
 [sub_resource type="SpriteFrames" id=1]
 animations = [ {
-"frames": [ ExtResource( 8 ), ExtResource( 4 ), ExtResource( 1 ), ExtResource( 2 ), ExtResource( 6 ), ExtResource( 5 ), null, null, null, null, null ],
+"frames": [ ExtResource( 5 ), ExtResource( 8 ), ExtResource( 4 ), ExtResource( 1 ), ExtResource( 2 ), ExtResource( 6 ), null, null, null, null, null ],
 "loop": true,
 "name": "fall",
 "speed": 8.0
