@@ -28,6 +28,14 @@
 [ext_resource path="res://data/images/player_down1.png" type="Texture" id=26]
 [ext_resource path="res://data/images/player_down2.png" type="Texture" id=27]
 
+[sub_resource type="SpriteFrames" id=3]
+animations = [ {
+"frames": [ ExtResource( 6 ) ],
+"loop": true,
+"name": "hurt",
+"speed": 5.0
+} ]
+
 [sub_resource type="SpriteFrames" id=1]
 animations = [ {
 "frames": [ ExtResource( 21 ), ExtResource( 5 ), ExtResource( 19 ), ExtResource( 20 ), ExtResource( 20 ), ExtResource( 19 ), ExtResource( 5 ), ExtResource( 21 ) ],
@@ -84,30 +92,23 @@ animations = [ {
 "speed": 5.0
 } ]
 
-[sub_resource type="SpriteFrames" id=3]
-animations = [ {
-"frames": [ ExtResource( 6 ) ],
-"loop": true,
-"name": "hurt",
-"speed": 5.0
-} ]
-
 [node name="Player" type="Node2D"]
 script = ExtResource( 7 )
-
-[node name="AnimatedSprite" type="AnimatedSprite" parent="."]
-frames = SubResource( 1 )
-animation = "right"
-playing = true
-
-[node name="ArrowSprite" type="AnimatedSprite" parent="."]
-frames = SubResource( 2 )
-animation = "right"
 
 [node name="HurtSprite" type="AnimatedSprite" parent="."]
 scale = Vector2( 0.75, 0.75 )
 frames = SubResource( 3 )
 animation = "hurt"
+
+[node name="AnimatedSprite" type="AnimatedSprite" parent="."]
+frames = SubResource( 1 )
+animation = "right"
+frame = 7
+playing = true
+
+[node name="ArrowSprite" type="AnimatedSprite" parent="."]
+frames = SubResource( 2 )
+animation = "right"
 
 [node name="DashSound" type="AudioStreamPlayer" parent="."]
 stream = ExtResource( 11 )

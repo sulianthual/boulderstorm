@@ -6,8 +6,9 @@ export (PackedScene) var Fall
 ################
 
 # Game Parameters (may edit here)
-var hpref: int=5 # starting health for player (must be <=5)
-var levelscores=[3,8,15,24,35]# scores needed to increases each level
+var hpref: int=7 # starting health for player (must be <=5)
+var levelscores=[3,8,15,24,35,48,61,76]# scores needed to increases each level
+#var levelscores=[1,2,3,4,5]# scores needed to increases each level
 var btmax: float = 1# max beat time in seconds (at level 1)
 var btmin: float = 0.6# min beat time in seconds (at max level)
 var bminlvlmin: int =1 # min boulder number that can randomly fall each beat (at min level)
@@ -28,6 +29,7 @@ var xglist=[80,240,400]# x-positions on grid
 var yglist=[80,240,400]# y-positions on grid
 
 # beat
+var btref: float=1# reference beat time (1 second) at which animations were recorded
 var btnow: float =btmax# current beat time in seconds
 
 # score and level
@@ -130,7 +132,7 @@ func start():
 	sp=0
 	op=0
 	$Player.place(ip,jp,sp,op)
-	$Player.setspeedscale(btmax/btnow)
+	$Player.setspeedscale(btref/btnow)
 	# player hp
 	hp=hpref
 	$HUD.showhealth(hp)
@@ -208,7 +210,7 @@ func start_tutorial():
 		dorandomboulders=false
 		docyclicboulders=true
 		sgbnewcyclep[1][1]=2
-#		sgbnewcyclet[1][1]=0
+		sgbnewcyclet[1][1]=2
 		addboulder(1,1)
 	else:
 		Main.tutorialdone=true# tutorial done
@@ -226,6 +228,11 @@ func start_tutorial():
 		sgbnewcyclep[0][2]=2
 		sgbnewcyclep[2][0]=2
 		sgbnewcyclep[2][2]=2
+		sgbnewcyclet[1][1]=2
+		sgbnewcyclet[0][0]=2
+		sgbnewcyclet[0][2]=2
+		sgbnewcyclet[2][0]=2
+		sgbnewcyclet[2][2]=2
 		addboulder(1,1)
 		addboulder(0,0)
 		addboulder(0,2)
@@ -279,8 +286,8 @@ func changelevel():
 	# change game parameters depending on settings
 	if level<levelmax:
 		# background color (linear)
-		var tempo=1.0-float(level)/float(levelmax)*0.9
-		$GridColor.color = Color(1, tempo, tempo, 1) # to red
+		var tempo=float(level)/float(levelmax)
+		$GridColor.color = Color(1, 1-tempo*0.9, 1-tempo*0.9, 1-tempo*0.5) # to red
 		# beat speed (power law, est )
 		btnow=btmax*pow(btmin/btmax,float(level-1)/float(levelmax-1))
 		$BeatTimer.wait_time= btnow
@@ -289,7 +296,7 @@ func changelevel():
 		bmax = int( bmaxlvlmin+float(level)/float(levelmax)*(bmaxlvlmax-bmaxlvlmin) )
 	else:
 		# background color
-		$GridColor.color = Color(1, 1-0.9, 1-0.9, 1) # alsmot red
+		$GridColor.color = Color(1, 1-0.9, 1-0.9, 0.5) # alsmot red
 		# beat speed
 		btnow=btmin
 		$BeatTimer.wait_time=btnow
@@ -297,7 +304,7 @@ func changelevel():
 		bmin=bminlvlmax
 		bmax=bmaxlvlmax
 	# Faster animations
-	$Player.setspeedscale(btmax/btnow)
+	$Player.setspeedscale(btref/btnow)
 		
 		
 # next level message
@@ -586,7 +593,6 @@ func hitplayer():
 	# if player on a boulder or decaying spot (has fallen on him)
 	if sgb[ip][jp] in [2,3]:
 		hp -= 1# player health
-		
 		$HUD.showhealth(hp)
 		# player is hit
 		if hp>0:
@@ -622,6 +628,10 @@ func die():
 		for j in range(3):
 			if sgb[i][j] == 1:#
 				removeboulder(i,j)
+			elif sgb[i][j] == 3:#
+				setboulder(i,j,2)
+	removeallfalls()
+	removeallsmokes()
 	# Dead Message
 	$HUD.showdeadmessage(score)
 	$HUD/LevelCount.hide()
@@ -665,7 +675,7 @@ func allsounds():
 func addboulder(ib,jb):
 	var boulder=Boulder.instance()
 	add_child(boulder)# add to scene
-	boulder.setspeedscale(btmax/btnow)
+	boulder.setspeedscale(btref/btnow)
 	sgbd[str(ib)+str(jb)]=boulder# add to boulder instances dictionary
 	setboulder(ib,jb,0)# empty by default
 
@@ -699,7 +709,7 @@ func removeallboulders():
 func addsmoke(ib,jb):
 	var smoke=Smoke.instance()
 	add_child(smoke)# add to scene
-	smoke.setspeedscale(btmax/btnow)
+	smoke.setspeedscale(btref/btnow)
 	smoke.set_z_index(2)# put in front/ front
 	sgsd[str(ib)+str(jb)]=smoke# add to smoke instances dictionary
 	setsmoke(ib,jb,1)
@@ -730,7 +740,7 @@ func removeallsmokes():
 func addfall(ib,jb):
 	var fall=Fall.instance()
 	add_child(fall)# add to scene
-	fall.setspeedscale(btmax/btnow)
+	fall.setspeedscale(btref/btnow)
 	fall.set_z_index(1)# put in front
 	sgfd[str(ib)+str(jb)]=fall# add to fall instances dictionary
 	setfall(ib,jb,1)	

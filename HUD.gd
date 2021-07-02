@@ -4,7 +4,7 @@ signal custom_on_EndButton_pressed
 signal custom_on_TutorialContinueButton_pressed
 ################
 
-var hpmax=5# max health
+var hpmax=7# max health
 var xhp0=110# grid for placing hearts
 var dxhp=50
 var yhp0=530
