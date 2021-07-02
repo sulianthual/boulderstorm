@@ -1,5 +1,5 @@
 extends CanvasLayer
-export (PackedScene) var Heart
+export (PackedScene) var HeartHUD
 signal custom_on_EndButton_pressed
 signal custom_on_TutorialContinueButton_pressed
 ################
@@ -121,7 +121,7 @@ func showdeadmessage(score):
 
 # make one new boulder at given index (ib>=0)
 func addheart(kb):
-	var heart=Heart.instance()
+	var heart=HeartHUD.instance()
 	add_child(heart)# add to scene
 	hpd[str(kb)]=heart# add to instances dictionary
 	setheart(kb,1)

@@ -2,6 +2,8 @@ extends Node
 export (PackedScene) var Boulder
 export (PackedScene) var Smoke
 export (PackedScene) var Fall
+export (PackedScene) var Arrow
+
 
 ################
 
@@ -15,7 +17,6 @@ var bminlvlmin: int =0 # min boulder number that can randomly fall each beat (at
 var bmaxlvlmin: int =3 # max boulder number that can randomly fall each beat (at min level)
 var bminlvlmax: int =1 # min boulder (at max level)
 var bmaxlvlmax: int =7 # max boulder (at max level)
-#
 var bnone: float=0.1# change that no new boulder at all during one round
 
 
@@ -42,6 +43,7 @@ var canchangelevel=true# can change level
 
 
 # player
+var jptime: float=0.3# time between player jumps (very important)
 var ip: int = 1# player x-position index (0-2)
 var jp: int = 1# player y-position index (0-2)
 var ipn: int = 1# where player wants to be next turn
@@ -135,6 +137,8 @@ func start():
 	op=0
 	$Player.place(ip,jp,sp,op)
 	$Player.setspeedscale(btref/btnow)
+	# player jump
+	$PlayerJumpTimer.wait_time=jptime
 	# player hp
 	hp=hpref
 	$HUD.showhealth(hp)
@@ -161,6 +165,8 @@ func start_tutorial():
 	sp=0
 	op=0
 	$Player.place(ip,jp,sp,op)
+	# player jump
+	$PlayerJumpTimer.wait_time=jptime
 	# player hp
 	hp=hpref
 	$HUD.showhealth(hp)
@@ -219,7 +225,7 @@ func start_tutorial():
 		$HUD/TutorialText.text="Falling boulders hurt the player. Decaying boulders can be stepped on. "
 		playercanmove=true
 		playerhpregen=true
-		ip=0
+		ip=1
 		jp=1
 		$Player.place(ip,jp,sp,op)
 		$Player.show()
@@ -319,18 +325,18 @@ func _on_NextLevelTextTimer_timeout():
 
 # update
 func _process(delta):
-	orientplayer()
+	orientplayer() 
+	moveplayer() 
 	checklevel()
 	devcontrols()
+	
 	
 
 # when BeatTimer rings
 func beatrings():
-	moveplayer()# move player first
 	makenewboulders()# propose new boulders
 	updateboulders()# update new/old boulders
 	correctboulders()# correct boulders (preserve escape route)
-	updatesmokes()# update new/old smokes
 	updatefalls()# update new/old falls
 	hitplayer()# hit player if on boulder spot
 	allsounds()# play boulder sounds
@@ -346,79 +352,40 @@ func devcontrols():
 ###############
 # player
 
-# orient the player for future move 
+# orient the player
 func orientplayer():
 	# if stand, aim, hit or hitaiming
-	if sp in [0,1,2,3] and playercanmove:
+	if sp in [0,1] and playercanmove and playercanjump:
 		if Input.is_action_pressed("ui_right"):
 			if ip<2: 
 				if sp == 0:# stand
 					sp=1# to aim
-				elif sp == 2:# hit
-					sp=3# to hitaim
 				ipn=ip+1
-				jpn=jp
-			else:
-				if sp == 1:# cancel jump
-					sp=0
-				elif sp == 3:
-					sp=2
-				ipn=ip
 				jpn=jp
 			op=0
 			$Player.place(ip,jp,sp,op)
-
 		elif Input.is_action_pressed("ui_up"):
 			if jp>0: 
 				if sp == 0:# stand
 					sp=1# to aim
-				elif sp == 2:# hit
-					sp=3# to hitaim
 				ipn=ip
 				jpn=jp-1
-			else:
-				if sp == 1:# cancel jump
-					sp=0
-				elif sp == 3:
-					sp=2
-				ipn=ip
-				jpn=jp
 			op=1
 			$Player.place(ip,jp,sp,op)
-			
 		elif Input.is_action_pressed("ui_left"):
 			if ip>0: 
 				if sp == 0:# stand
 					sp=1# to aim
-				elif sp == 2:# hit
-					sp=3# to hitaim
 				ipn=ip-1
-				jpn=jp
-			else:
-				if sp == 1:# cancel jump
-					sp=0
-				elif sp == 3:
-					sp=2
-				ipn=ip
 				jpn=jp
 			op=2
 			$Player.place(ip,jp,sp,op)
-
 		elif Input.is_action_pressed("ui_down"):
 			if jp<2: 
 				if sp == 0:# stand
 					sp=1# to aim
-				elif sp == 2:# hit
-					sp=3# to hitaim
 				ipn=ip
 				jpn=jp+1
-			else:
-				if sp == 1:# cancel jump
-					sp=0
-				elif sp == 3:
-					sp=2
-				ipn=ip
-				jpn=jp
 			op=3
 			$Player.place(ip,jp,sp,op)
 
@@ -426,20 +393,19 @@ func orientplayer():
 	
 # update the player during beatring
 func moveplayer():
-	# Player wants to stay in place
-	if sp == 0:
-		ipn=ip
-		jpn=jp
-		sp=0
 	# Player wants to move
-	elif sp == 1:
+	if sp ==1 and playercanjump:
+		playerjumpreload()
 		# boulder blocks the way (break it)
-		if sgb[ipn][jpn] == 2 :
-			sp=0
+		if sgb[ipn][jpn] == 2:
+			if sp == 1:
+				sp=0
 			$Player.place(ip,jp,sp,op)
 			removeboulder(ipn,jpn)# remove boulder
 			addsmoke(ipn,jpn)# add smoke
-			aboulderwascracked=true
+			addarrow(ip,jp,op)# add arrow
+			$Player/CrackSound.play()
+			$Player/CoinSound.play()
 			# increase score
 			score += 1
 			$HUD.showscore(score)
@@ -449,36 +415,21 @@ func moveplayer():
 			jp=jpn
 			sp=0
 			$Player.place(ip,jp,sp,op)
-			playerhasdashed=true
+			$Player/DashSound.play()
 		# update for next step
 		ipn=ip
 		jpn=jp
-	# Player is hurt
-	elif sp == 2:
-		ipn=ip
-		jpn=jp
-		sp=0# revert to stand
-		$Player.place(ip,jp,sp,op)
-	# Player is hurt / wants to move
-	elif sp == 3:
-		# boulder blocks the way (break it)
-		if sgb[ipn][jpn] == 2 :
-			sp=0
-			$Player.place(ip,jp,sp,op)
-			removeboulder(ipn,jpn)# remove boulder
-			addsmoke(ipn,jpn)# add smoke
-			aboulderwascracked=true
-		# otherwise move to spot
-		else:
-			ip=ipn
-			jp=jpn
-			sp=0
-			$Player.place(ip,jp,sp,op)
-			playerhasdashed=true
-		# update for next step
-		ipn=ip
 		jpn=jp
 
+
+# player starts reloading jump
+func playerjumpreload():
+	playercanjump=false
+	$PlayerJumpTimer.start()
+	 
+func _on_PlayerJumpTimer_timeout():
+	playercanjump=true
+	$PlayerJumpTimer.stop()
 
 # make new round of boulders at beat ring
 func makenewboulders():
@@ -492,8 +443,6 @@ func makenewboulders():
 				var newi=rng.randi_range(0,2)
 				var newj=rng.randi_range(0,2)
 				sgbnew[newi][newj]=1
-			
-			
 	if docyclicboulders:
 		for i in range(3):
 			for j in range(3):
@@ -564,20 +513,6 @@ func correctboulders():
 
 
 
-# update smokes
-func updatesmokes():
-	for i in range(3):
-		for j in range(3):
-			# empty spot
-			if sgs[i][j] == 0:
-				pass
-			# standing smoke
-			elif sgs[i][j] == 1:
-				setsmoke(i,j,2)# to decaying smoke
-			# decaying smoke
-			elif sgs[i][j] == 2:
-				removesmoke(i,j)# to remove smoke
-
 # update falls
 func updatefalls():
 	for i in range(3):
@@ -596,24 +531,26 @@ func updatefalls():
 func hitplayer():
 	# if player on a boulder or decaying spot (has fallen on him)
 	if sgb[ip][jp] in [2,3]:
-		hp -= 1# player health
+		if playerhpregen == false:# player regenerates health (for tutorial)
+			hp -= 1# player health
 		$HUD.showhealth(hp)
 		# player is hit
 		if hp>0:
-			sp=2
+			$Blood.place(ip,jp,1)
+			$PlayerHurtTimer.start()
 			$Player.place(ip,jp,sp,op)
-			playerwasjusthit=true
+			$Player/HurtSound.play()
+			$Player/HitSound.play()
 			removeboulder(ip,jp)
 			removefall(ip,jp)# to remove fall
 		# player dies
 		else:
 			die()	
-	# player regenerates health (for tutorial)
-	if playerhpregen == true:
-		if hp<hpref:
-			hp += 1
-			$HUD.showhealth(hp)
-		
+
+# stop hurt animation
+func _on_PlayerHurtTimer_timeout():
+	$PlayerHurtTimer.stop()
+	$Blood.place(ip,jp,0)
 
 # die 
 func die():
@@ -625,7 +562,6 @@ func die():
 	playerjustdied=true
 	# remove boulder/smoke/fall in place of player
 	removeboulder(ip,jp)
-	removesmoke(ip,jp)
 	removefall(ip,jp)
 	# remove all new boulders (that are warnings)
 	for i in range(3):
@@ -635,25 +571,15 @@ func die():
 			elif sgb[i][j] == 3:#
 				setboulder(i,j,2)
 	removeallfalls()
-	removeallsmokes()
 	# Dead Message
 	$HUD.showdeadmessage(score)
 	$HUD/LevelCount.hide()
 	# Stop Play Music
 	$PlayMusic.stop()
+	$Player/DeathSound.play()
 
 # play various sounds during one round (in order of importance)
 func allsounds():
-	if playerjustdied == true:
-		$Player/DeathSound.play()
-	elif playerwasjusthit==true:
-		$Player/HurtSound.play()
-	if aboulderwascracked==true:
-		$Player/CrackSound.play()
-		$Player/CoinSound.play()
-	elif playerhasdashed == true:
-		$Player/DashSound.play()
-
 	# environment sounds
 	if aboulderisincoming==true:
 		$WarnSound.play()
@@ -661,13 +587,7 @@ func allsounds():
 		$FallSound.play()
 	if aboulderhasdecayed==true:
 		$DecaySound.play()
-		
-
 	# reset triggers
-	playerjustdied=false
-	playerwasjusthit=false
-	aboulderwascracked=false
-	playerhasdashed=false
 	aboulderisfalling=false
 	aboulderhasdecayed=false
 	aboulderisincoming=false
@@ -708,9 +628,25 @@ func removeallboulders():
 				removeboulder(i,j)
 
 ###############
+# arrow functions
+
+# make one new arrow at given location (with x,y)
+# arrow disappears on its own on a timer
+func addarrow(ib,jb,op):
+	var arrow=Arrow.instance()
+	add_child(arrow)# add to scene
+	arrow.setspeedscale(btref/btnow)
+	arrow.set_z_index(2)# put in front/ front
+	arrow.place(ib,jb,op,1)
+
+
+	
+	
+###############
 # smoke functions
 
 # make one new smoke at given location
+# smoke disappears on its own on a timer
 func addsmoke(ib,jb):
 	var smoke=Smoke.instance()
 	add_child(smoke)# add to scene
@@ -724,20 +660,7 @@ func setsmoke(ib,jb,sb):
 	sgs[ib][jb]=sb
 	sgsd[str(ib)+str(jb)].place(ib,jb,sb)
 
-# remove smoke from scene at given location
-func removesmoke(ib,jb):
-	if sgs[ib][jb] != 0:
-		if sgsd[str(ib)+str(jb)]:
-			sgsd[str(ib)+str(jb)].kill()# kill
-	sgs[ib][jb]=0
 
-
-# remove all smokes
-func removeallsmokes():
-	for i in range(3):
-		for j in range(3):
-			if sgs[i][j]>0:
-				removesmoke(i,j)
 ###############
 # fall functions
 
@@ -786,6 +709,12 @@ func getneighbors(index):
 	if index == 8: return [5,7] # bottom right
 
 ###############
+
+
+
+
+
+
 
 
 

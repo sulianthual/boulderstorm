@@ -1,4 +1,4 @@
-[gd_scene load_steps=16 format=2]
+[gd_scene load_steps=18 format=2]
 
 [ext_resource path="res://Boulder.tscn" type="PackedScene" id=1]
 [ext_resource path="res://data/audio/music.wav" type="AudioStream" id=2]
@@ -14,6 +14,8 @@
 [ext_resource path="res://data/audio/nextlevel.wav" type="AudioStream" id=12]
 [ext_resource path="res://data/audio/decay.wav" type="AudioStream" id=13]
 [ext_resource path="res://data/audio/warn.wav" type="AudioStream" id=14]
+[ext_resource path="res://Blood.tscn" type="PackedScene" id=15]
+[ext_resource path="res://Arrow.tscn" type="PackedScene" id=16]
 
 [sub_resource type="DynamicFont" id=1]
 size = 50
@@ -27,6 +29,7 @@ script = ExtResource( 6 )
 Boulder = ExtResource( 1 )
 Smoke = ExtResource( 10 )
 Fall = ExtResource( 9 )
+Arrow = ExtResource( 16 )
 
 [node name="Background" type="ColorRect" parent="."]
 margin_right = 480.0
@@ -53,9 +56,19 @@ __meta__ = {
 
 [node name="BeatTimer" type="Timer" parent="."]
 
+[node name="Blood" parent="." instance=ExtResource( 15 )]
+
 [node name="Player" parent="." instance=ExtResource( 7 )]
 position = Vector2( 240, 240 )
 scale = Vector2( 0.75, 0.75 )
+
+[node name="PlayerHurtTimer" type="Timer" parent="."]
+wait_time = 3.0
+one_shot = true
+
+[node name="PlayerJumpTimer" type="Timer" parent="."]
+wait_time = 0.3
+one_shot = true
 
 [node name="HUD" parent="." instance=ExtResource( 5 )]
 
@@ -102,6 +115,8 @@ stream = ExtResource( 14 )
 volume_db = -5.0
 
 [connection signal="timeout" from="BeatTimer" to="." method="beatrings"]
+[connection signal="timeout" from="PlayerHurtTimer" to="." method="_on_PlayerHurtTimer_timeout"]
+[connection signal="timeout" from="PlayerJumpTimer" to="." method="_on_PlayerJumpTimer_timeout"]
 [connection signal="custom_on_EndButton_pressed" from="HUD" to="." method="_on_HUD_custom_on_EndButton_pressed"]
 [connection signal="custom_on_TutorialContinueButton_pressed" from="HUD" to="." method="_on_HUD_custom_on_TutorialContinueButton_pressed"]
 [connection signal="timeout" from="NextLevelTextTimer" to="." method="_on_NextLevelTextTimer_timeout"]

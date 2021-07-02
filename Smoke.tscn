@@ -25,3 +25,9 @@ scale = Vector2( 0.75, 0.75 )
 frames = SubResource( 1 )
 animation = "smoke"
 frame = 1
+
+[node name="HideTimer" type="Timer" parent="."]
+wait_time = 0.6
+one_shot = true
+
+[connection signal="timeout" from="HideTimer" to="." method="_on_HideTimer_timeout"]

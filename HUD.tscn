@@ -2,7 +2,7 @@
 
 [ext_resource path="res://HUD.gd" type="Script" id=1]
 [ext_resource path="res://data/fonts/karmatic-arcade.ttf" type="DynamicFontData" id=2]
-[ext_resource path="res://Heart.tscn" type="PackedScene" id=3]
+[ext_resource path="res://HeartHUD.tscn" type="PackedScene" id=3]
 [ext_resource path="res://data/images/headhud.png" type="Texture" id=4]
 [ext_resource path="res://data/images/boulderhud.png" type="Texture" id=5]
 [ext_resource path="res://data/fonts/8bitOperatorPlus8-Regular.ttf" type="DynamicFontData" id=6]
@@ -51,7 +51,7 @@ font_data = ExtResource( 2 )
 
 [node name="HUD" type="CanvasLayer"]
 script = ExtResource( 1 )
-Heart = ExtResource( 3 )
+HeartHUD = ExtResource( 3 )
 
 [node name="HeadHUD" type="AnimatedSprite" parent="."]
 frames = SubResource( 1 )

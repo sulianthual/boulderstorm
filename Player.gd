@@ -31,9 +31,7 @@ func place(ip,jp,sp,op):
 	position.x=xplist[ip]
 	position.y=yplist[jp]
 	# Player is standing 
-	if sp == 0:
-		$ArrowSprite.hide()
-		$HurtSprite.hide()
+	if sp in [0,1]:
 		if op == 0: 
 			$AnimatedSprite.animation="right"
 		elif op == 1:
@@ -42,92 +40,9 @@ func place(ip,jp,sp,op):
 			$AnimatedSprite.animation="left"
 		elif op == 3:
 			$AnimatedSprite.animation="down"
-	# Player is wanting to move
-	elif sp == 1:
-		$HurtSprite.hide()
-		if op == 0: 
-			$AnimatedSprite.animation="right"
-			$ArrowSprite.animation="right"
-			$ArrowSprite.offset=Vector2(xpaoff,0)
-			if ip<2:
-				$ArrowSprite.show()
-			else:
-				$ArrowSprite.hide()
-		elif op == 1:
-			$AnimatedSprite.animation="up"
-			$ArrowSprite.animation="up"
-			$ArrowSprite.offset=Vector2(0,-ypaoff)
-			if jp>0:
-				$ArrowSprite.show()
-			else:
-				$ArrowSprite.hide()
-		elif op == 2:
-			$AnimatedSprite.animation="left"
-			$ArrowSprite.animation="left"
-			$ArrowSprite.offset=Vector2(-xpaoff,0)
-			if ip>0:
-				$ArrowSprite.show()
-			else:
-				$ArrowSprite.hide()
-		elif op == 3:
-			$AnimatedSprite.animation="down"
-			$ArrowSprite.animation="down"
-			$ArrowSprite.offset=Vector2(0,ypaoff)
-			if jp<2:
-				$ArrowSprite.show()
-			else:
-				$ArrowSprite.hide()
-	# Player is hurt
-	elif sp == 2:
-		$ArrowSprite.hide()
-		$HurtSprite.show()
-		if op == 0: 
-			$AnimatedSprite.animation="right"
-		elif op == 1:
-			$AnimatedSprite.animation="up"
-		elif op == 2:
-			$AnimatedSprite.animation="left"
-		elif op == 3:
-			$AnimatedSprite.animation="down"
-	# Player is hurst/ wanting to move
-	elif sp == 3:
-		$HurtSprite.show()
-		if op == 0: 
-			$AnimatedSprite.animation="right"
-			$ArrowSprite.animation="right"
-			$ArrowSprite.offset=Vector2(xpaoff,0)
-			if ip<2:
-				$ArrowSprite.show()
-			else:
-				$ArrowSprite.hide()
-		elif op == 1:
-			$AnimatedSprite.animation="up"
-			$ArrowSprite.animation="up"
-			$ArrowSprite.offset=Vector2(0,-ypaoff)
-			if jp>0:
-				$ArrowSprite.show()
-			else:
-				$ArrowSprite.hide()
-		elif op == 2:
-			$AnimatedSprite.animation="left"
-			$ArrowSprite.animation="left"
-			$ArrowSprite.offset=Vector2(-xpaoff,0)
-			if ip>0:
-				$ArrowSprite.show()
-			else:
-				$ArrowSprite.hide()
-		elif op == 3:
-			$AnimatedSprite.animation="down"
-			$ArrowSprite.animation="down"
-			$ArrowSprite.offset=Vector2(0,ypaoff)
-			if jp<2:
-				$ArrowSprite.show()
-			else:
-				$ArrowSprite.hide()
+
 	# Player is dead
 	elif sp == 4: 
-		$ArrowSprite.hide()
-		$HurtSprite.hide()
 		$AnimatedSprite.animation="dead"
 	else:
 		hide()
@@ -135,6 +50,6 @@ func place(ip,jp,sp,op):
 # Change animation speed
 func setspeedscale(speedscale):
 	$AnimatedSprite.set_speed_scale(speedscale)# speed up animations
-	
+
 ################
 
