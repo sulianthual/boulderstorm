@@ -536,6 +536,8 @@ func changelevel():
 	else:
 		$HUD/LevelCount.text='Lvl Max'
 		$NextLevelText/NextLevelTextLabel.text='Level Max'
+		if score<=levelscores[-1]:
+			$NextLevelSound.play()
 	$NextLevelText.show()
 	$NextLevelTextTimer.start()# start timer to end next level text label display
 	# cleanup the board
