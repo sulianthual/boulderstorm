@@ -2,9 +2,6 @@ extends Node
 
 ################
 
-var doaudio=true# audio on or off
-var dowindowed=true# windowed or fullscreen
-
 var dotutorial=false# play tutorial
 var tutorialpart=0# part of tutorial played (starts at 0)
 var tutorialdone=false# ended tutorial

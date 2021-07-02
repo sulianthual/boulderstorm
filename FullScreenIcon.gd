@@ -1,6 +1,6 @@
 extends Node
 
-var dowindowed=true
+var dowindowed=not OS.window_fullscreen
 
 func _ready():
 	if dowindowed==true:

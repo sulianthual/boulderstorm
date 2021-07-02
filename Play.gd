@@ -140,8 +140,7 @@ func start():
 	# Next level
 	$NextLevelText.show()
 	# music
-	if Main.doaudio == true:
-		$PlayMusic.play()
+	$PlayMusic.play()
 	#exit
 	$ExitButton.show()
 

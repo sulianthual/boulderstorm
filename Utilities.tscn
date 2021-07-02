@@ -20,12 +20,12 @@ script/source = "extends Node
 
 
 # Declare member variables here. Examples:
-var doaudio = true
+var doaudio = not AudioServer.is_bus_mute(0)
 
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
-	if Main.doaudio==true:
+	if doaudio==true:
 		$AudioIconButton.set_pressed(false)
 	else:
 		$AudioIconButton.set_pressed(true)
@@ -39,10 +39,10 @@ func _ready():
 func _on_AudioIconButton_toggled(button_pressed):
 	$AudioIconSound.play()
 	if button_pressed==true:
-		Main.doaudio=false
+		doaudio=false
 	else:
-		Main.doaudio=true
-	if Main.doaudio ==false:
+		doaudio=true
+	if doaudio ==false:
 		AudioServer.set_bus_mute(0, true)# mute audio bus 0
 	else:
 		AudioServer.set_bus_mute(0, false)# unmute audio bus 0
