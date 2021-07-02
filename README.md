@@ -15,7 +15,7 @@ reference: https://github.com/sulianthual/boulderstorm
 
 1) Run and edit with Godot (v3 at time of creation)
 
-
+2) or play it on itch.io [here](https://sulianthual.itch.io/boulder-storm).
 
 
 
