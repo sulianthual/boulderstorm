@@ -2,15 +2,15 @@
 
 importer="texture"
 type="StreamTexture"
-path="res://.import/boulderfall8.png-9e74f9755496351056589bf247e0fb52.stex"
+path="res://.import/boulderwarn10.png-3145154626e205d4f1234084e2b4b1ee.stex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://data/images/boulderfall8.png"
-dest_files=[ "res://.import/boulderfall8.png-9e74f9755496351056589bf247e0fb52.stex" ]
+source_file="res://data/images/boulderwarn10.png"
+dest_files=[ "res://.import/boulderwarn10.png-3145154626e205d4f1234084e2b4b1ee.stex" ]
 
 [params]
 

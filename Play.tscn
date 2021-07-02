@@ -32,7 +32,7 @@ font_data = ExtResource( 11 )
 
 [sub_resource type="StyleBoxEmpty" id=5]
 
-[sub_resource type="DynamicFont" id=8]
+[sub_resource type="DynamicFont" id=6]
 size = 30
 extra_spacing_top = 5
 extra_spacing_bottom = 15
@@ -144,7 +144,7 @@ custom_styles/hover = SubResource( 2 )
 custom_styles/pressed = SubResource( 3 )
 custom_styles/focus = SubResource( 4 )
 custom_styles/normal = SubResource( 5 )
-custom_fonts/font = SubResource( 8 )
+custom_fonts/font = SubResource( 6 )
 custom_colors/font_color = Color( 0, 0, 0, 1 )
 custom_colors/font_color_hover = Color( 0.819608, 0.0784314, 0.0784314, 1 )
 shortcut = SubResource( 7 )

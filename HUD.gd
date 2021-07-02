@@ -5,9 +5,10 @@ signal custom_on_TutorialContinueButton_pressed
 ################
 
 var hpmax=7# max health
-var xhp0=110# grid for placing hearts
-var dxhp=50
-var yhp0=530
+var dxhp=56
+var xhp0=240+dxhp/2#110# grid for placing hearts
+var ihp0=3# increment offset
+var yhp0=520
 var dyhp=0
 var hpd={}# dictionary of heart instances (labelled as "i")
 var hdshow=true# show the hp head
@@ -18,6 +19,23 @@ var hpshow=true# show the hp hearts (can be toggled)
 
 # init
 func _ready():
+	# head
+	$HeadHUD.animation="base"
+	$HeadHUD.scale= Vector2(0.7,0.7)# change scale
+	$HeadHUD.position.x= (-1-ihp0)*dxhp+xhp0
+	$HeadHUD.position.y= yhp0-2
+	# hearts
+	hpshow=true
+	for k in range(hpmax):
+		addheart(k)
+		setheart(k,0)#hide by default
+	# score (boulder count)
+	$BoulderHUD.animation="base"
+	$BoulderHUD.scale= Vector2(0.7,0.7)# change scale
+	$BoulderCount.text="0"
+	# Level
+	$LevelCount.text='Lvl 1'
+	#
 	if Main.dotutorial:
 		start_tutorial()# start new game
 	else:
@@ -25,28 +43,13 @@ func _ready():
 
 # regular start
 func start():
-	# head
-	$HeadHUD.animation="base"
-	$HeadHUD.scale= Vector2(0.75,0.75)# change scale
-	$HeadHUD.position.x= 50
-	$HeadHUD.position.y= yhp0
 	$HeadHUD.show()
 	# hearts
-	for k in range(hpmax):
-		addheart(k)
-		setheart(k,0)#hide
-	# score (boulder count)
-	$BoulderHUD.animation="base"
-	$BoulderHUD.scale= Vector2(0.75,0.75)# change scale
-#	$BoulderHUD.position.x= 50
-#	$BoulderHUD.position.y= 610
-	$BoulderCount.text="0"
-#	$BoulderCount.rect_position.x=100
-#	$BoulderCount.rect_position.y=585
-	# Level
-	$LevelCount.text='Lvl 1'
+	hpshow=true
+	# others
+	$BoulderHUD.show()
+	$BoulderCount.show()
 	$LevelCount.show()
-	# Dead message
 	$DeadText.hide()
 	$EndButton.hide()
 	# Tutorial
@@ -55,21 +58,18 @@ func start():
 
 # tutorial start
 func start_tutorial():
+	$HeadHUD.hide()
 	# hearts
 	hpshow=false# put hearts but hide them
-	for k in range(hpmax):
-		addheart(k)
-		setheart(k,0)#hide
-	# score (boulder count)
+	# others
 	$BoulderHUD.hide()
 	$BoulderCount.hide()
 	$LevelCount.hide()
-	$EndButton.hide()
 	$DeadText.hide()
+	$EndButton.hide()
 	# Tutorial 
 	$TutorialContinueButton.hide()
 	$TutorialContinueTimer.start()
-	# Text
 	$TutorialText.hide()
 	$TutorialText.align=Label.ALIGN_FILL
 
@@ -97,11 +97,12 @@ func _on_TutorialContinueButton_pressed():
 
 # update health display
 func showhealth(hp):
-	for k in range(hpmax):
-		if k<hp:
-			setheart(k,1)#show
-		else:
-			setheart(k,0)#hide
+	if hpshow == true: 
+		for k in range(hpmax):
+			if k<hp:
+				setheart(k,1)#show
+			else:
+				setheart(k,0)#hide
 
 # update boulder count display
 func showscore(score):
@@ -124,14 +125,11 @@ func addheart(kb):
 	var heart=HeartHUD.instance()
 	add_child(heart)# add to scene
 	hpd[str(kb)]=heart# add to instances dictionary
-	setheart(kb,1)
 
 # (re)set boulder position and state (0-1 for hide,show)
 func setheart(kb,sp):
-	if hpshow == false:
-		sp=0
 	if str(kb) in hpd.keys():
-		hpd[str(kb)].place( kb*dxhp+xhp0,kb*dyhp+yhp0,sp)
+		hpd[str(kb)].place( (kb-ihp0)*dxhp+xhp0,kb*dyhp+yhp0,sp)
 			
 
 # remove heart from scene (shouldnt be used, hide the heart instead)

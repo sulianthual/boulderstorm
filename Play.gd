@@ -4,23 +4,33 @@ export (PackedScene) var Smoke
 export (PackedScene) var Fall
 export (PackedScene) var Arrow
 
+################################################################################################################
+################################################################################################################
+# Variables Initialization
+# *VAR
 
-################
-
-# Game Parameters (may edit here)
+# Main Game Parameters (may edit here)
 var hpref: int=7 # starting health for player, and maximum (must be <=7)
-var levelscores=[3,8,15,24,35,48,61,76,93]# scores needed to increases each level
-#var levelscores=[1,2,3,4,5,6,7,8,9]# scores needed to increases each level
-var btmax: float = 1# max beat time in seconds (at level 1)
-var btmin: float = 0.5# min beat time in seconds (at max level)
-var bminlvlmin: int =0 # min boulder number that can randomly fall each beat (at min level)
+#var levelscores=[2, 4, 8, 14, 22, 32, 44, 58, 74]# scores needed to increases each level (+2 each level)
+#var levelscores=[3, 6, 12, 21, 33, 48, 66, 87, 111]# (+3 each level)
+#var levelscores=[4, 8, 16, 28, 44, 64, 88, 116, 148]#(+4 each level)
+var levelscores=[5, 10, 20, 35, 55, 80, 110, 145, 185]# (+5 each level, best one)
+#var levelscores=[1,2,3,4,5,6,7,8,9]# (for dev tests, quickest level upgrade)
+# jump and beat
+var jptimelvlmin: float=0.25#0.3  time between player jumps (at min level)
+var jptimelvlmax: float=0.25*0.6#0.3*0.6  time between player jumps (at max level) (should follow btlvlmax)
+var btlvlmin: float = 1# max beat time in seconds (at min level)
+var btlvlmax: float = 0.6# min beat time in seconds (at max level)
+# boulder rng
+var bminlvlmin: int =1 # min boulder number that can randomly fall each beat (at min level)
 var bmaxlvlmin: int =3 # max boulder number that can randomly fall each beat (at max level)
 var bminlvlmax: int =1 # min boulder (at max level)
 var bmaxlvlmax: int =7 # max boulder (at max level)
-var bnone: float=0.1# change that no new boulder at all during one round
+var bnonelvlmin: float=0.3# small chance of no new boulder at all during one round (at min level)
+var bnonelvlmax: float=0.1# small chance of no new boulder at all during one round (at max level)
 var bheartchancelvlmin: float=0.25# change that a boulder turns into a heart (min level)
 var bheartchancelvlmax: float=0.1# change that a boulder turns into a heart (max level)
-var bheartchance: float=bheartchancelvlmin# change that a boulder turns into a heart
+
 
 ################
 # utils
@@ -35,7 +45,7 @@ var yglist=[80,240,400]# y-positions on grid
 
 # beat
 var btref: float=1# reference beat time (1 second) at which animations were recorded
-var btnow: float =btmax# current beat time in seconds
+var btnow: float =btlvlmin# current beat time in seconds
 
 # score and level
 var level: int =1# level index (starts at 1)
@@ -43,9 +53,8 @@ var levelmax: int =len(levelscores)+1# max level (game parameters constant after
 var score: int# player score (>=0), defined at game start
 var canchangelevel=true# can change level
 
-
 # player
-var jptime: float=0.3# time between player jumps (very important)
+var jptime: float=jptimelvlmin# time between player jumps (very important)
 var ip: int = 1# player x-position index (0-2)
 var jp: int = 1# player y-position index (0-2)
 var ipn: int = 1# where player wants to be next turn
@@ -54,12 +63,17 @@ var sp: int = 0 # player state (0-4 for stand, aiming, hit, hitaiming, dead)
 var op: int = 0 # player orientation (0-3 for r,u,l,d)
 var hp: int # player health (>=0 and <=hpmax in HUD), defined at start game
 var playercanmove=true # player can move or not
-var playerhpregen=false# player regens +1hp per turn (for tutorial)
+var playerhpregen=false# player regens +1hp per turn (for tutorial or dev)
 var playercanjump=true# player has reloaded and can jump (on timer)
 
-# boulders
+# boulders parameters
+var bnone: float=bnonelvlmin# small chance of no new boulder at all during one round
 var bmin: int=bminlvlmin# current min boulder number that can randomly fall each beat 
 var bmax: int=bmaxlvlmin# current max boulder number that can randomly fall each beat
+var bheartchance: float=bheartchancelvlmin# change that a boulder turns into a heart
+var sgbnewcyclep# period for cyclic boulders (=0 no boulder, >0 for period)
+var sgbnewcyclet# time increment for cyclic boulders
+# boulder dictionaries
 var sgb# grid boulder state as vector (0-3 for empty, warn, stand, decay), matrix made during init
 var sgbnew# grid for new boulders (0-1), make during init
 var sgbd={}# dictionary of boulder instances (labelled as "ij")
@@ -67,50 +81,21 @@ var sgs# grid smoke state when a boulder has been cracked (0-1)
 var sgsd={}# dictionary of smoke instances (labelled as "ij")
 var sgf# grid fall state when a boulder has fallen (0-1)
 var sgfd={}# dictionary of fall instances (labelled as "ij")
+# boulder booleans
 var boulderscandecay=true# boulders can decay or not
 var dorandomboulders=true# each turn do random boulders (default)
 var docyclicboulders=false# each turn do cyclic boulders (not default)
-var sgbnewcyclep# period for cyclic boulders (=0 no boulder, >0 for period)
-var sgbnewcyclet# time increment for cyclic boulders
-#
-# booleans for sounds
 var aboulderisfalling=false# is at least one boulder falling
-var playerhasdashed=false
-var playerwasjusthit=false
-var playerjustdied=false
-var aboulderwascracked=false
 var aboulderhasdecayed=false
 var aboulderisincoming=false
-###############
-# utils
 
-# make matrix 3x3 filled with zeros (manually because type doesnt exist in godot)
-func matrix3x3():
-	var matrix=[]
-	for i in range(3):
-		matrix.append([])
-		for j in range(3):
-			matrix[i].append([])
-	matrix=matrix3x3fill(matrix,0)
-	return matrix
+################################################################################################################
+################################################################################################################
+# Game initialization/ End
+# *INIT 
 
-# fill matrix with uniform  value
-func matrix3x3fill(matrix,value):
-	for i in range(3):
-		for j in range(3):
-			matrix[i][j]=value
-	return matrix
-
-# Convert matrix 3x3 indices i,j (0-2,0-2) to array index k (0-8)
-func ijtok(i,j):
-	return i+j*3
-
-func ktoij(k):
-	return Vector2(k%3,int(k/3))
-###############
-# main
-
-# Called when the node enters the scene tree for the first time.
+# init function
+# Called when the node enters the scene tree for the first time. (like __init__)
 func _ready():
 	# utils
 	rng.randomize()# ensures new executions generate different randoms
@@ -153,7 +138,8 @@ func start():
 	# Next level
 	$NextLevelText.show()
 	# music
-	$PlayMusic.play()
+	if Main.domusic == true:
+		$PlayMusic.play()
 	#exit
 	$ExitButton.show()
 
@@ -202,6 +188,10 @@ func start_tutorial():
 		dorandomboulders=false
 	elif Main.tutorialpart == 3:
 		$HUD/TutorialText.text="Smash boulders to earn points and pass levels."
+		canchangelevel=true
+		$NextLevelText.show()
+		$HUD/LevelCount.show()
+		$HUD/TutorialText.rect_position.y -= 15
 		playercanmove=true
 		ip=0
 		jp=1
@@ -222,7 +212,12 @@ func start_tutorial():
 		$HUD/BoulderCount.show()
 	elif Main.tutorialpart == 4:
 		bheartchance=1
+		hp=2
+		$HUD.hpshow=true
+		$HUD.showhealth(hp)
+		$HUD/HeadHUD.show()
 		$HUD/TutorialText.text="Some boulders have hearts that regenerate health."
+		$HUD/TutorialText.rect_position.y += 55
 		playercanmove=true
 		ip=0
 		jp=1
@@ -231,6 +226,7 @@ func start_tutorial():
 		boulderscandecay=false
 		addboulder(1,1)
 		setboulder(1,1,2)
+		
 	elif Main.tutorialpart == 5:
 		$HUD/TutorialText.text="Boulders fall, then stand and eventually decay and disappear."
 		playercanmove=false
@@ -271,11 +267,13 @@ func start_tutorial():
 		addboulder(2,2)
 		$HUD/TutorialContinueButton.text='Back'
 
-
+###############
+# Game finish
+# *EXIT *FINISH *END 
 
 # exit scene if dead + end button pressed 
 func _on_HUD_custom_on_EndButton_pressed():
-	if sp==4:
+	if sp==4:# if is dead
 		endgame()
 
 # end of game (dead)
@@ -293,94 +291,59 @@ func _on_HUD_custom_on_TutorialContinueButton_pressed():
 	else:
 		Main.to_tutorial()
 
-# check if new level
-func checklevel():
-	if canchangelevel and level<levelmax:
-		if score>=levelscores[level-1]:
-			changelevel()
+################################################################################################################
+################################################################################################################
+# Main Game loop
+#*LOOP	*MAIN
 
-#			
-
-# apply level changes
-func changelevel():
-	# increase level
-	level += 1
-	if level<levelmax:
-		$HUD/LevelCount.text='Lvl '+str(level)
-		$NextLevelText/NextLevelTextLabel.text='Level '+str(level)
-		$NextLevelSound.play()
-	else:
-		$HUD/LevelCount.text='Lvl Max'
-		$NextLevelText/NextLevelTextLabel.text='Level Max'
-	$NextLevelText.show()
-	$NextLevelTextTimer.start()# start timer to end next level text label display
-	# cleanup the board
-	removeallboulders()
-	removeallfalls()
-#	removeallsmokes()
-	# change game parameters depending on settings
-	if level<levelmax:
-		# background color (linear)
-		var tempo=float(level)/float(levelmax)
-		$GridColor.color = Color(1, 1-tempo*0.9, 1-tempo*0.9, tempo*0.9) # to red
-		# beat speed (power law, est )
-		btnow=btmax*pow(btmin/btmax,float(level-1)/float(levelmax-1))
-		$BeatTimer.wait_time= btnow
-		# randomized boulders (linear)
-		bmin = int(round( bminlvlmin+float(level)/float(levelmax)*(bminlvlmax-bminlvlmin) ))
-		bmax = int(round( bmaxlvlmin+float(level)/float(levelmax)*(bmaxlvlmax-bmaxlvlmin) ))
-		# heart drop chance
-		bheartchance = bheartchancelvlmin+float(level)/float(levelmax)*(bheartchancelvlmax-bheartchancelvlmin) 
-	else:
-		# background color
-		$GridColor.color = Color(1, 1-0.9, 1-0.9, 0.9) # alsmot red
-		# beat speed
-		btnow=btmin
-		$BeatTimer.wait_time=btnow
-		# randomized boulders
-		bmin=bminlvlmax
-		bmax=bmaxlvlmax
-		# heart drop chance
-		bheartchance=bheartchancelvlmax
-	# Faster animations
-	$Player.setspeedscale(btref/btnow)
-		
-# next level message
-func _on_NextLevelTextTimer_timeout():
-	$NextLevelText.hide()
-	$NextLevelTextTimer.stop()
-
-	
-###############
-
-# update
+# update (every step)
 func _process(delta):
 	orientplayer() 
 	moveplayer() 
+	getheart()
 	checklevel()
 	devcontrols()
 
-# when BeatTimer rings
+
+
+# Game update when BeatTimer rings
+# *BEAT
 func beatrings():
 	makenewboulders()# propose new boulders
 	updateboulders()# update new/old boulders
 	correctboulders()# correct boulders (preserve escape route)
 	updatefalls()# update new/old falls
 	hitplayer()# hit player if on boulder spot
-	allsounds()# play boulder sounds
-	#
+	bouldersounds()# play boulder sounds
 
 
 # developper controls
+# *DEV
 func devcontrols():
 	pass
-#	if Input.is_action_pressed("ui_select"):
-#		Main.to_start()
+	#
+	#  test beat changes
+#	var temp1=round(jptime*100)/100
+#	var temp2=round(btnow*100)/100 
+#	var temp3=round(jptime/btnow*100)/100
+#	var temp0=str(level)
+#	if level >= levelmax:
+#		temp0='levelmax'
+#	print('level=',temp0,', jump=',temp1,', beat=',temp2,', ratio=',temp3)
 
-###############
-# player
 
-# orient the player
+
+	
+	
+	
+	
+	
+################################################################################################################
+################################################################################################################
+# Player controls
+#*PLAYER
+
+# orient the player (
 func orientplayer():
 	# if stand, aim, hit or hitaiming
 	if sp in [0,1] and playercanmove and playercanjump:
@@ -417,11 +380,8 @@ func orientplayer():
 			op=3
 			$Player.place(ip,jp,sp,op)
 
-
-	
-# update the player during beatring
+# move the player
 func moveplayer():
-	getheart()
 	# Player wants to move
 	if sp ==1 and playercanjump:
 		playerjumpreload()
@@ -454,14 +414,6 @@ func moveplayer():
 		jpn=jp
 		jpn=jp
 
-# get heart if stepping on one
-func getheart():
-	if sgb[ip][jp] == 4:# if step on heart
-		if hp<hpref:
-			hp += 1
-		$HUD.showhealth(hp)
-		$Player/HealSound.play()
-		removeboulder(ip,jp)# remove boulder
 
 # player starts reloading jump
 func playerjumpreload():
@@ -472,6 +424,143 @@ func _on_PlayerJumpTimer_timeout():
 	playercanjump=true
 	$PlayerJumpTimer.stop()
 
+# player gets heart if stepping on one
+func getheart():
+	if sgb[ip][jp] == 4:# if step on heart
+		if hp<hpref:
+			hp += 1
+		$HUD.showhealth(hp)
+		$Player/HealSound.play()
+		removeboulder(ip,jp)# remove boulder
+
+# hit player if is on falling boulder spot
+func hitplayer():
+	# if player on a boulder or decaying spot (has fallen on him)
+	if sgb[ip][jp] in [2,3]:
+		if playerhpregen == false:# player regenerates health (for tutorial)
+			hp -= 1# player health
+		$HUD.showhealth(hp)
+		# player is hit
+		if hp>0:
+			$Blood.place(ip,jp,1)
+			$PlayerHurtTimer.start()
+			$Player.place(ip,jp,sp,op)
+			$Player/HurtSound.play()
+			$Player/HitSound.play()
+			removeboulder(ip,jp)
+			removefall(ip,jp)# to remove fall
+			# cleanup the board
+			removeallboulders()
+			removeallfalls()
+		# player dies
+		else:
+			die()	
+
+# stop hurt animation
+func _on_PlayerHurtTimer_timeout():
+	$PlayerHurtTimer.stop()
+	$Blood.place(ip,jp,0)
+
+# die 
+func die():
+	# stop the beat
+	$BeatTimer.stop()
+	# player
+	sp=4
+	$Player.place(ip,jp,sp,op)
+	# remove boulder/smoke/fall in place of player
+	removeboulder(ip,jp)
+	removefall(ip,jp)
+	# remove all new boulders (that are warnings)
+	for i in range(3):
+		for j in range(3):
+			if sgb[i][j] == 1:#
+				removeboulder(i,j)
+			elif sgb[i][j] == 3:#
+				setboulder(i,j,2)
+	removeallfalls()
+	# Dead Message
+	$HUD.showdeadmessage(score)
+	$HUD/LevelCount.hide()
+	# Stop Play Music
+	$PlayMusic.stop()
+	$Player/DeathSound.play()
+	#exit
+	$ExitButton.hide()
+
+################################################################################################################
+################################################################################################################
+# Game level 
+#*LEVEL
+
+# check if new level
+func checklevel():
+	if canchangelevel and level<levelmax:
+		if score>=levelscores[level-1]:
+			changelevel()
+
+# apply level changes
+func changelevel():
+	# increase level
+	level += 1
+	if level<levelmax:
+		$HUD/LevelCount.text='Lvl '+str(level)
+		$NextLevelText/NextLevelTextLabel.text='Level '+str(level)
+		$NextLevelSound.play()
+	else:
+		$HUD/LevelCount.text='Lvl Max'
+		$NextLevelText/NextLevelTextLabel.text='Level Max'
+	$NextLevelText.show()
+	$NextLevelTextTimer.start()# start timer to end next level text label display
+	# cleanup the board
+	removeallboulders()
+	removeallfalls()
+#	removeallsmokes()
+	# change game parameters depending on settings
+	if level<levelmax:
+		# background color (linear)
+		var tempo=float(level)/float(levelmax)
+		$GridColor.color = Color(1, 1-tempo*0.9, 1-tempo*0.9, tempo*0.9) # to red
+		# jump reload speed (power law)
+		jptime = jptimelvlmin*pow(jptimelvlmax/jptimelvlmin,float(level-1)/float(levelmax-1))
+		# beat speed (power law)
+		btnow=btlvlmin*pow(btlvlmax/btlvlmin,float(level-1)/float(levelmax-1))
+		$BeatTimer.wait_time= btnow
+		# randomized boulders (linear)
+		bnone=bnonelvlmin+float(level)/float(levelmax)*(bnonelvlmax-bnonelvlmin) 
+		bmin = int(round( bminlvlmin+float(level)/float(levelmax)*(bminlvlmax-bminlvlmin) ))
+		bmax = int(round( bmaxlvlmin+float(level)/float(levelmax)*(bmaxlvlmax-bmaxlvlmin) ))
+		# heart drop chance
+		bheartchance = bheartchancelvlmin+float(level)/float(levelmax)*(bheartchancelvlmax-bheartchancelvlmin) 
+	else:
+		# background color
+		$GridColor.color = Color(1, 1-0.9, 1-0.9, 0.9) # almost red
+		#jump reload speed
+		jptime=jptimelvlmax
+		# beat speed
+		btnow=btlvlmax
+		$BeatTimer.wait_time=btnow
+		# randomized boulders
+		bnone=bnonelvlmax
+		bmin=bminlvlmax
+		bmax=bmaxlvlmax
+		# heart drop chance
+		bheartchance=bheartchancelvlmax
+	# Adjustments from new parameters
+	$PlayerJumpTimer.wait_time=jptime
+	$Player.setspeedscale(btref/btnow)
+
+# next level message
+func _on_NextLevelTextTimer_timeout():
+	$NextLevelText.hide()
+	$NextLevelTextTimer.stop()
+
+
+################################################################################################################
+################################################################################################################
+# Boulders management
+#*BOULDER
+	
 # make new round of boulders at beat ring
 func makenewboulders():
 	# empty sgbnew to zero
@@ -492,9 +581,6 @@ func makenewboulders():
 					if sgbnewcyclet[i][j]>sgbnewcyclep[i][j]:
 						sgbnewcyclet[i][j]=0
 						sgbnew[i][j]=1
-					
-	# test:
-#	sgbnew=matrix3x3fill(sgbnew,1)
 
 # update boulders
 # sgb: grid boulder state as vector (0-3 for empty, warn, stand, decay)
@@ -552,8 +638,6 @@ func correctboulders():
 			elif sgb[i][j] == 2:# is a boulder spot
 				setboulder(i,j,3)# to boulder decay
 
-
-
 # update falls
 func updatefalls():
 	for i in range(3):
@@ -568,64 +652,9 @@ func updatefalls():
 			elif sgf[i][j] == 2:
 				removefall(i,j)# to remove fall
 
-# hit player if is on falling boulder spot
-func hitplayer():
-	# if player on a boulder or decaying spot (has fallen on him)
-	if sgb[ip][jp] in [2,3]:
-		if playerhpregen == false:# player regenerates health (for tutorial)
-			hp -= 1# player health
-		$HUD.showhealth(hp)
-		# player is hit
-		if hp>0:
-			$Blood.place(ip,jp,1)
-			$PlayerHurtTimer.start()
-			$Player.place(ip,jp,sp,op)
-			$Player/HurtSound.play()
-			$Player/HitSound.play()
-			removeboulder(ip,jp)
-			removefall(ip,jp)# to remove fall
-			# cleanup the board
-			removeallboulders()
-			removeallfalls()
-		# player dies
-		else:
-			die()	
-
-# stop hurt animation
-func _on_PlayerHurtTimer_timeout():
-	$PlayerHurtTimer.stop()
-	$Blood.place(ip,jp,0)
-
-# die 
-func die():
-	# stop the beat
-	$BeatTimer.stop()
-	# player
-	sp=4
-	$Player.place(ip,jp,sp,op)
-	playerjustdied=true
-	# remove boulder/smoke/fall in place of player
-	removeboulder(ip,jp)
-	removefall(ip,jp)
-	# remove all new boulders (that are warnings)
-	for i in range(3):
-		for j in range(3):
-			if sgb[i][j] == 1:#
-				removeboulder(i,j)
-			elif sgb[i][j] == 3:#
-				setboulder(i,j,2)
-	removeallfalls()
-	# Dead Message
-	$HUD.showdeadmessage(score)
-	$HUD/LevelCount.hide()
-	# Stop Play Music
-	$PlayMusic.stop()
-	$Player/DeathSound.play()
-	#exit
-	$ExitButton.hide()
 	
-# play various sounds during one round (in order of importance)
-func allsounds():
+# play boulder sounds during one round
+func bouldersounds():
 	# environment sounds
 	if aboulderisincoming==true:
 		$WarnSound.play()
@@ -637,10 +666,14 @@ func allsounds():
 	aboulderisfalling=false
 	aboulderhasdecayed=false
 	aboulderisincoming=false
-	
+
+################################################################################################################
+################################################################################################################
+# Game modules/elements
 
 ###############
 # boulders functions
+# *BOULDER
 
 # make one new boulder at given location
 func addboulder(ib,jb):
@@ -674,7 +707,8 @@ func removeallboulders():
 				removeboulder(i,j)
 
 ###############
-# arrow functions
+# arrow functions (punch glove from player)
+# *ARROW
 
 # make one new arrow at given location (with x,y)
 # arrow disappears on its own on a timer
@@ -685,11 +719,10 @@ func addarrow(ib,jb,op):
 	arrow.set_z_index(2)# put in front/ front
 	arrow.place(ib,jb,op,1)
 
-
-	
 	
 ###############
-# smoke functions
+# smoke functions (when a rock is destroyed)
+#*SMOKE
 
 # make one new smoke at given location
 # smoke disappears on its own on a timer
@@ -708,7 +741,8 @@ func setsmoke(ib,jb,sb):
 
 
 ###############
-# fall functions
+# fall functions (when a rock hits the floor)
+#*FALL
 
 # make one new fall at given location
 func addfall(ib,jb):
@@ -724,8 +758,7 @@ func addfall(ib,jb):
 func setfall(ib,jb,sb):
 	sgf[ib][jb]=sb
 	sgfd[str(ib)+str(jb)].place(ib,jb,sb)
-		
-		
+
 
 # remove fall from scene at given location
 func removefall(ib,jb):
@@ -740,7 +773,8 @@ func removeallfalls():
 			if sgf[i][j]>0:
 				removefall(i,j)
 ###############
-# utils
+# utilities
+# *UTILS
 
 # return list of neighbor spots for a given position (uses array instead of matrix)
 func getneighbors(index):
@@ -753,6 +787,34 @@ func getneighbors(index):
 	if index == 6: return [3,7] # bottom left
 	if index == 7: return [4,6,8]  # bottom
 	if index == 8: return [5,7] # bottom right
+
+# make matrix 3x3 filled with zeros (manually because type doesnt exist in godot)
+func matrix3x3():
+	var matrix=[]
+	for i in range(3):
+		matrix.append([])
+		for j in range(3):
+			matrix[i].append([])
+	matrix=matrix3x3fill(matrix,0)
+	return matrix
+
+# fill matrix with uniform  value
+func matrix3x3fill(matrix,value):
+	for i in range(3):
+		for j in range(3):
+			matrix[i][j]=value
+	return matrix
+
+# Convert matrix 3x3 indices i,j (0-2,0-2) to array index k (0-8)
+func ijtok(i,j):
+	return i+j*3
+
+# Convert back
+func ktoij(k):
+	return Vector2(k%3,int(k/3))
+	
+################################################################################################################
+################################################################################################################
 
 ###############
 
@@ -778,4 +840,4 @@ func getneighbors(index):
 
 
 
-
+#
