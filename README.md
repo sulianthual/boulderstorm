@@ -5,7 +5,7 @@
 
 code by Sulian Thual (2021)
 
-Small arcade game, avoid the boulders and earn points. My first game in Godot, 
+Small arcade game, smash and avoid the boulders. Supports keyboard or touchscreen controls. My first game in Godot, 
 and an adaptation of [boulder shower](https://github.com/sulianthual/bouldershower).
 
 reference: https://github.com/sulianthual/boulderstorm

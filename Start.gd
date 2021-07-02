@@ -10,6 +10,9 @@ func _ready():
 	# connect scene to Main (scene tree)
 	# wait time to start once press start
 	$StartTimer.wait_time=0.5
+	#
+	# removed exit button (on itch.io, its stalls the game. On pc, one can just close the window)
+	$ExitButton.hide()
 
 # update
 func _process(delta):
