@@ -25,9 +25,11 @@ func place(ib,jb,sb):
 	elif sb == 1:
 		show()
 		$AnimatedSprite.animation="fall"
+		$AnimatedSprite.play()
 	elif sb == 2:
 		show()
 		$AnimatedSprite.animation="fall"
+		$AnimatedSprite.play()
 
 # Change animation speed
 func setspeedscale(speedscale):

@@ -64,6 +64,15 @@ var dorandomboulders=true# each turn do random boulders (default)
 var docyclicboulders=false# each turn do cyclic boulders (not default)
 var sgbnewcyclep# period for cyclic boulders (=0 no boulder, >0 for period)
 var sgbnewcyclet# time increment for cyclic boulders
+#
+# booleans for sounds
+var aboulderisfalling=false# is at least one boulder falling
+var playerhasdashed=false
+var playerwasjusthit=false
+var playerjustdied=false
+var aboulderwascracked=false
+var aboulderhasdecayed=false
+var aboulderisincoming=false
 ###############
 # utils
 
@@ -133,6 +142,8 @@ func start():
 	$BeatTimer.start()
 	# Next level
 	$NextLevelText.show()
+	# music
+	$PlayMusic.play()
 
 # start a tutorial
 func start_tutorial():
@@ -157,6 +168,8 @@ func start_tutorial():
 	# start the beat
 	$BeatTimer.wait_time=btnow
 	$BeatTimer.start()
+	# music
+	$PlayMusic.stop()
 	# messages
 	$HUD/HeadHUD.hide()
 	$HUD/DeadText.hide()
@@ -311,6 +324,7 @@ func beatrings():
 	updatesmokes()# update new/old smokes
 	updatefalls()# update new/old falls
 	hitplayer()# hit player if on boulder spot
+	allsounds()# play boulder sounds
 	#
 
 
@@ -416,7 +430,7 @@ func moveplayer():
 			$Player.place(ip,jp,sp,op)
 			removeboulder(ipn,jpn)# remove boulder
 			addsmoke(ipn,jpn)# add smoke
-			$Player/CrackSound.play()
+			aboulderwascracked=true
 			# increase score
 			score += 1
 			$HUD.showscore(score)
@@ -426,7 +440,7 @@ func moveplayer():
 			jp=jpn
 			sp=0
 			$Player.place(ip,jp,sp,op)
-			$Player/DashSound.play()
+			playerhasdashed=true
 		# update for next step
 		ipn=ip
 		jpn=jp
@@ -445,14 +459,14 @@ func moveplayer():
 			$Player.place(ip,jp,sp,op)
 			removeboulder(ipn,jpn)# remove boulder
 			addsmoke(ipn,jpn)# add smoke
-			$Player/CrackSound.play()
+			aboulderwascracked=true
 		# otherwise move to spot
 		else:
 			ip=ipn
 			jp=jpn
 			sp=0
 			$Player.place(ip,jp,sp,op)
-			$Player/DashSound.play()
+			playerhasdashed=true
 		# update for next step
 		ipn=ip
 		jpn=jp
@@ -491,6 +505,7 @@ func updateboulders():
 			if sgb[i][j] == 0:
 				if sgbnew[i][j]==1:# new boulder
 					addboulder(i,j)# add boulder
+					setboulder(i,j,1)# to boulder warn
 			# boulder warn
 			elif sgb[i][j] == 1:
 				if sgbnew[i][j]==1:# new boulder on top
@@ -537,6 +552,7 @@ func correctboulders():
 				setboulder(i,j,3)# to boulder decay
 
 
+
 # update smokes
 func updatesmokes():
 	for i in range(3):
@@ -570,12 +586,13 @@ func hitplayer():
 	# if player on a boulder or decaying spot (has fallen on him)
 	if sgb[ip][jp] in [2,3]:
 		hp -= 1# player health
+		
 		$HUD.showhealth(hp)
 		# player is hit
 		if hp>0:
 			sp=2
 			$Player.place(ip,jp,sp,op)
-			$Player/HurtSound.play()
+			playerwasjusthit=true
 			removeboulder(ip,jp)
 			removefall(ip,jp)# to remove fall
 		# player dies
@@ -595,7 +612,7 @@ func die():
 	# player
 	sp=4
 	$Player.place(ip,jp,sp,op)
-	$Player/DeathSound.play()
+	playerjustdied=true
 	# remove boulder/smoke/fall in place of player
 	removeboulder(ip,jp)
 	removesmoke(ip,jp)
@@ -611,6 +628,36 @@ func die():
 	# Stop Play Music
 	$PlayMusic.stop()
 
+# play various sounds during one round (in order of importance)
+func allsounds():
+	if playerjustdied == true:
+		$Player/DeathSound.play()
+	elif playerwasjusthit==true:
+		$Player/HurtSound.play()
+	elif aboulderwascracked==true:
+		$Player/CrackSound.play()
+	elif playerhasdashed == true:
+		$Player/DashSound.play()
+	else:
+		# environment sounds
+		if aboulderisincoming==true:
+			$WarnSound.play()
+		if aboulderisfalling == true:
+			$FallSound.play()
+		if aboulderhasdecayed==true:
+			$DecaySound.play()
+		
+
+	# reset triggers
+	playerjustdied=false
+	playerwasjusthit=false
+	aboulderwascracked=false
+	playerhasdashed=false
+	aboulderisfalling=false
+	aboulderhasdecayed=false
+	aboulderisincoming=false
+	
+
 ###############
 # boulders functions
 
@@ -620,12 +667,17 @@ func addboulder(ib,jb):
 	add_child(boulder)# add to scene
 	boulder.setspeedscale(btmax/btnow)
 	sgbd[str(ib)+str(jb)]=boulder# add to boulder instances dictionary
-	setboulder(ib,jb,1)
+	setboulder(ib,jb,0)# empty by default
+
 	
 # (re)set boulder position and state
 func setboulder(ib,jb,sb):
 	sgb[ib][jb]=sb
 	sgbd[str(ib)+str(jb)].place(ib,jb,sb)
+	if sb == 3:
+		aboulderhasdecayed=true
+	elif sb== 1:
+		aboulderisincoming=true
 
 # remove boulder from scene at given location
 func removeboulder(ib,jb):
@@ -681,12 +733,15 @@ func addfall(ib,jb):
 	fall.setspeedscale(btmax/btnow)
 	fall.set_z_index(1)# put in front
 	sgfd[str(ib)+str(jb)]=fall# add to fall instances dictionary
-	setfall(ib,jb,1)
-
+	setfall(ib,jb,1)	
+	aboulderisfalling=true
+	
 # (re)set fall position and state
 func setfall(ib,jb,sb):
 	sgf[ib][jb]=sb
 	sgfd[str(ib)+str(jb)].place(ib,jb,sb)
+		
+		
 
 # remove fall from scene at given location
 func removefall(ib,jb):
