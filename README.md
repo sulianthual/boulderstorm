@@ -5,7 +5,7 @@
 
 code by Sulian Thual (2021)
 
-Small arcade game, smash and avoid the boulders. Supports keyboard or touchscreen controls. My first game in Godot, 
+A very fast-paced game about smashing and avoiding boulders. Try to reach a score above 200. Free to play, supports keyboard and touchscreen controls. My first game in Godot, 
 and an adaptation of [boulder shower](https://github.com/sulianthual/bouldershower).
 
 reference: https://github.com/sulianthual/boulderstorm
