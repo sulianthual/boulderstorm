@@ -10,28 +10,25 @@ export (PackedScene) var Arrow
 # *VAR
 
 # Main Game Parameters (may edit here)
-var hpref: int=7 # starting health for player, and maximum (must be <=7)
-#var levelscores=[2, 4, 8, 14, 22, 32, 44, 58, 74]# scores needed to increases each level (+2 each level)
-#var levelscores=[3, 6, 12, 21, 33, 48, 66, 87, 111]# (+3 each level)
-#var levelscores=[4, 8, 16, 28, 44, 64, 88, 116, 148]#(+4 each level)
-var levelscores=[5, 10, 20, 35, 55, 80, 110, 145, 185]# (+5 each level, best one)
-#var levelscores=[1,2,3,4,5,6,7,8,9]# (for dev tests, quickest level upgrade)
+export var hpref: int=7 # starting health for player, and maximum (must be <=7)
+export var levelscores=[5, 10, 20, 35, 55, 80, 110, 145, 185]# (+5 each level, best one)
+#var levelscores=[1,2,3]# (for dev tests, quickest level upgrade)
 # jump and beat
-var jptimelvlmin: float=0.1# test start at max#0.25#  time between player jumps (at min level)
-var jptimelvlmax: float=0.1#0.3*0.6  time between player jumps (at max level) (should follow btlvlmax)
-var btlvlmin: float = 1# max beat time in seconds (at min level)
-var btlvlmax: float = 0.6# min beat time in seconds (at max level)
-var playersafejump= false # player wont jump on a warning spot (but can still receive a boulder on head) (avoid, better to increase dash speed)
+export var jptimelvlmin: float=0.1# test start at max#0.25#  time between player jumps (at min level)
+export var jptimelvlmax: float=0.1#0.3*0.6  time between player jumps (at max level) (should follow btlvlmax)
+export var btlvlmin: float = 1# max beat time in seconds (at min level)
+export var btlvlmax: float = 0.6# min beat time in seconds (at max level)
 # boulder rng
-var bminlvlmin: int =1 # min boulder number that can randomly fall each beat (at min level)
-var bmaxlvlmin: int =3 # max boulder number that can randomly fall each beat (at max level)
-var bminlvlmax: int =1 # min boulder (at max level)
-var bmaxlvlmax: int =7 # max boulder (at max level)
-var bnonelvlmin: float=0.3# small chance of no new boulder at all during one round (at min level)
-var bnonelvlmax: float=0.1# small chance of no new boulder at all during one round (at max level)
-var bheartchancelvlmin: float=0.25# change that a boulder turns into a heart (min level)
-var bheartchancelvlmax: float=0.1# change that a boulder turns into a heart (max level)
-
+export var bminlvlmin: int =1 # min boulder number that can randomly fall each beat (at min level)
+export var bmaxlvlmin: int =3 # max boulder number that can randomly fall each beat (at max level)
+export var bminlvlmax: int =1 # min boulder (at max level)
+export var bmaxlvlmax: int =7 # max boulder (at max level)
+export var bnonelvlmin: float=0.3# small chance of no new boulder at all during one round (at min level)
+export var bnonelvlmax: float=0.1# small chance of no new boulder at all during one round (at max level)
+export var bheartchancelvlmin: float=0.25# change that a boulder turns into a heart (min level)
+export var bheartchancelvlmax: float=0.1# change that a boulder turns into a heart (max level)
+export var musicpitchlvlmin: float=1.0# pitch scale for music (ref=1 for regular play) (min level)
+export var musicpitchlvlmax: float=1.1# pitch scale for music  (max level)
 
 ################
 # utils
@@ -48,6 +45,8 @@ var yglist=[80,240,400]# y-positions on grid
 var btref: float=1# reference beat time (1 second) at which animations were recorded
 var btnow: float =btlvlmin# current beat time in seconds
 
+# music
+var musicpitch: float = musicpitchlvlmin# pitch scale for music
 # score and level
 var level: int =1# level index (starts at 1)
 var levelmax: int =len(levelscores)+1# max level (game parameters constant after it)
@@ -66,7 +65,7 @@ var hp: int # player health (>=0 and <=hpmax in HUD), defined at start game
 var playercanmove=true # player can move or not
 var playerhpregen=false# player regens +1hp per turn (for tutorial or dev)
 var playercanjump=true# player has reloaded and can jump (on timer)
-
+var playersafejump= false # player wont jump on a warning spot (but can still receive a boulder on head) (avoid, better to increase dash speed)
 
 # boulders parameters
 var bnone: float=bnonelvlmin# small chance of no new boulder at all during one round
@@ -140,6 +139,7 @@ func start():
 	# Next level
 	$NextLevelText.show()
 	# music
+	$PlayMusic.set_pitch_scale(musicpitch)
 	$PlayMusic.play()
 	#exit
 	$ExitButton.show()
@@ -170,6 +170,7 @@ func start_tutorial():
 	$BeatTimer.wait_time=btnow
 	$BeatTimer.start()
 	# music
+	$PlayMusic.set_pitch_scale(musicpitch)
 	$PlayMusic.stop()
 	# exit
 	$ExitButton.hide()
@@ -488,6 +489,7 @@ func _on_PlayerHurtTimer_timeout():
 	$Blood.place(ip,jp,0)
 
 # die 
+#*DIE *DEAD
 func die():
 	# stop the beat
 	$BeatTimer.stop()
@@ -497,9 +499,10 @@ func die():
 	# remove boulder/smoke/fall in place of player
 	removeboulder(ip,jp)
 	removefall(ip,jp)
-	# remove all new boulders (that are warnings)
+	# update on all boulders
 	for i in range(3):
 		for j in range(3):
+			# if warning: remove it
 			if sgb[i][j] == 1:#
 				removeboulder(i,j)
 			elif sgb[i][j] == 3:#
@@ -533,6 +536,7 @@ func changelevel():
 		$HUD/LevelCount.text='Lvl '+str(level)
 		$NextLevelText/NextLevelTextLabel.text='Level '+str(level)
 		$NextLevelSound.play()
+		
 	else:
 		$HUD/LevelCount.text='Lvl Max'
 		$NextLevelText/NextLevelTextLabel.text='Level Max'
@@ -553,13 +557,16 @@ func changelevel():
 		jptime = jptimelvlmin*pow(jptimelvlmax/jptimelvlmin,float(level-1)/float(levelmax-1))
 		# beat speed (power law)
 		btnow=btlvlmin*pow(btlvlmax/btlvlmin,float(level-1)/float(levelmax-1))
-		$BeatTimer.wait_time= btnow
+		
 		# randomized boulders (linear)
 		bnone=bnonelvlmin+float(level)/float(levelmax)*(bnonelvlmax-bnonelvlmin) 
 		bmin = int(round( bminlvlmin+float(level)/float(levelmax)*(bminlvlmax-bminlvlmin) ))
 		bmax = int(round( bmaxlvlmin+float(level)/float(levelmax)*(bmaxlvlmax-bmaxlvlmin) ))
 		# heart drop chance
 		bheartchance = bheartchancelvlmin+float(level)/float(levelmax)*(bheartchancelvlmax-bheartchancelvlmin) 
+		# music pitch 
+#		musicpitch = musicpitchlvlmin+float(level)/float(levelmax)*(musicpitchlvlmax-musicpitchlvlmin) 
+		musicpitch=musicpitchlvlmin# (increases only after reaching max level
 	else:
 		# background color
 		$GridColor.color = Color(1, 1-0.9, 1-0.9, 0.9) # almost red
@@ -567,16 +574,22 @@ func changelevel():
 		jptime=jptimelvlmax
 		# beat speed
 		btnow=btlvlmax
-		$BeatTimer.wait_time=btnow
 		# randomized boulders
 		bnone=bnonelvlmax
 		bmin=bminlvlmax
 		bmax=bmaxlvlmax
 		# heart drop chance
 		bheartchance=bheartchancelvlmax
+		# music pitch
+		musicpitch=musicpitchlvlmax
 	# Adjustments from new parameters
+	$BeatTimer.wait_time= btnow
 	$PlayerJumpTimer.wait_time=jptime
 	$Player.setspeedscale(btref/btnow)
+	$PlayMusic.set_pitch_scale(musicpitch)
+	if level>=levelmax:
+		$PlayMusic.stop()
+		$PlayMusic.play()
 
 # next level message
 func _on_NextLevelTextTimer_timeout():
