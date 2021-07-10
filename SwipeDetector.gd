@@ -7,23 +7,31 @@ export(float, 1.0, 1.5) var MAX_DIAGONAL_SLOPE = 1.3
 onready var timer = $SwipeTimer
 var swipe_start_position= Vector2()
 
+
 ###############
 
 ###############
 # init
 
+
+# reset(externally)
+func reset():
+	timer.stop()
+#	swipe_start_position=Vector2()
+
 # function whenever any input is pressed
 func _input(event):
-	
 	# omit anything not a ScreenTouch
 	if not event is InputEventScreenTouch:
 		return
 	# pressed: user starts swipe
 	if event.pressed:
 		_start_detection(event.position)
+#		print('swipe detector start')
 	# not pressed and still timer: user ends swipe
 	elif not timer.is_stopped():
 		_end_detection(event.position)
+#		print('swipe detector end')
 	
 # start a swipe
 func _start_detection(position):
@@ -58,3 +66,10 @@ func _end_detection(position):
 # stay pressed: swipe canceled (dont really need this)
 func _on_SwipeTimer_timeout():
 	emit_signal('swiped_canceled', swipe_start_position)
+
+# If Pause, cancel the swipes
+func _on_PauseButton_toggled(button_pressed):
+	pass
+#	reset()
+#	print('pause button signal: too late to cancel swipe')
+

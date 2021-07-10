@@ -53,9 +53,9 @@ func _on_AudioIconButton_toggled(button_pressed):
 [node name="FPSCounterHere" type="Node" parent="."]
 
 [node name="FPScounterLabel" type="Label" parent="FPSCounterHere"]
-margin_left = 447.821
+margin_left = 87.821
 margin_top = 691.695
-margin_right = 487.821
+margin_right = 127.821
 margin_bottom = 726.695
 custom_fonts/font = SubResource( 1 )
 custom_colors/font_color = Color( 0, 0, 0, 1 )

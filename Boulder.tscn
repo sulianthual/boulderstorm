@@ -28,11 +28,6 @@
 
 [sub_resource type="SpriteFrames" id=1]
 animations = [ {
-"frames": [ ExtResource( 1 ), ExtResource( 7 ), ExtResource( 5 ), ExtResource( 2 ), ExtResource( 9 ), ExtResource( 8 ), ExtResource( 11 ), ExtResource( 10 ), ExtResource( 24 ), ExtResource( 25 ), ExtResource( 22 ), ExtResource( 23 ), ExtResource( 23 ), ExtResource( 23 ) ],
-"loop": true,
-"name": "warn",
-"speed": 12.0
-}, {
 "frames": [ ExtResource( 4 ) ],
 "loop": true,
 "name": "stand",
@@ -47,6 +42,11 @@ animations = [ {
 "loop": true,
 "name": "decay",
 "speed": 10.0
+}, {
+"frames": [ ExtResource( 1 ), ExtResource( 7 ), ExtResource( 5 ), ExtResource( 2 ), ExtResource( 9 ), ExtResource( 8 ), ExtResource( 11 ), ExtResource( 10 ), ExtResource( 24 ), ExtResource( 25 ), ExtResource( 22 ), ExtResource( 23 ), ExtResource( 23 ), ExtResource( 23 ) ],
+"loop": true,
+"name": "warn",
+"speed": 12.0
 } ]
 
 [node name="Boulder" type="Node2D"]

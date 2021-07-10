@@ -1,4 +1,4 @@
-[gd_scene load_steps=26 format=2]
+[gd_scene load_steps=30 format=2]
 
 [ext_resource path="res://Boulder.tscn" type="PackedScene" id=1]
 [ext_resource path="res://data/audio/music.wav" type="AudioStream" id=2]
@@ -17,6 +17,7 @@
 [ext_resource path="res://Blood.tscn" type="PackedScene" id=15]
 [ext_resource path="res://Arrow.tscn" type="PackedScene" id=16]
 [ext_resource path="res://Utilities.tscn" type="PackedScene" id=17]
+[ext_resource path="res://PauseButton.gd" type="Script" id=18]
 [ext_resource path="res://SwipeDetector.gd" type="Script" id=19]
 
 [sub_resource type="DynamicFont" id=1]
@@ -41,6 +42,16 @@ extra_spacing_bottom = 15
 font_data = ExtResource( 11 )
 
 [sub_resource type="ShortCut" id=7]
+
+[sub_resource type="StyleBoxEmpty" id=9]
+
+[sub_resource type="StyleBoxEmpty" id=10]
+
+[sub_resource type="DynamicFont" id=8]
+size = 30
+extra_spacing_top = 5
+extra_spacing_bottom = 15
+font_data = ExtResource( 11 )
 
 [node name="Play" type="Node"]
 script = ExtResource( 6 )
@@ -95,6 +106,7 @@ stream = ExtResource( 2 )
 volume_db = -5.0
 
 [node name="SelectSound" type="AudioStreamPlayer" parent="."]
+pause_mode = 2
 stream = ExtResource( 4 )
 
 [node name="NextLevelTextTimer" type="Timer" parent="."]
@@ -133,14 +145,15 @@ stream = ExtResource( 14 )
 volume_db = -5.0
 
 [node name="ExitButton" type="Button" parent="."]
+pause_mode = 2
 anchor_left = 0.5
 anchor_top = 1.0
 anchor_right = 0.5
 anchor_bottom = 1.0
-margin_left = -123.5
-margin_top = -56.0
-margin_right = 125.5
-margin_bottom = 18.0
+margin_left = 61.5
+margin_top = -56.9999
+margin_right = 310.5
+margin_bottom = 17.0001
 rect_scale = Vector2( 1, 1.01736 )
 custom_styles/hover = SubResource( 2 )
 custom_styles/pressed = SubResource( 3 )
@@ -164,6 +177,34 @@ one_shot = true
 
 [node name="Utilities" parent="." instance=ExtResource( 17 )]
 
+[node name="PauseButton" type="Button" parent="."]
+pause_mode = 2
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+margin_left = -124.5
+margin_top = -88.0
+margin_right = 124.5
+margin_bottom = -14.0
+rect_scale = Vector2( 1, 1.01736 )
+custom_styles/hover = SubResource( 2 )
+custom_styles/pressed = SubResource( 9 )
+custom_styles/focus = SubResource( 4 )
+custom_styles/disabled = SubResource( 10 )
+custom_styles/normal = SubResource( 5 )
+custom_fonts/font = SubResource( 8 )
+custom_colors/font_color = Color( 0, 0, 0, 1 )
+custom_colors/font_color_hover = Color( 0.819608, 0.0784314, 0.0784314, 1 )
+custom_colors/font_color_pressed = Color( 0, 0, 0, 1 )
+toggle_mode = true
+shortcut = SubResource( 7 )
+text = "pause"
+script = ExtResource( 18 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
 [connection signal="timeout" from="BeatTimer" to="." method="beatrings"]
 [connection signal="timeout" from="PlayerHurtTimer" to="." method="_on_PlayerHurtTimer_timeout"]
 [connection signal="timeout" from="PlayerJumpTimer" to="." method="_on_PlayerJumpTimer_timeout"]
@@ -173,3 +214,5 @@ one_shot = true
 [connection signal="pressed" from="ExitButton" to="." method="_on_ExitButton_pressed"]
 [connection signal="swiped" from="SwipeDetector" to="." method="_on_SwipeDetector_swiped"]
 [connection signal="timeout" from="SwipeDetector/SwipeTimer" to="SwipeDetector" method="_on_SwipeTimer_timeout"]
+[connection signal="toggled" from="PauseButton" to="PauseButton" method="_on_PauseButton_toggled"]
+[connection signal="toggled" from="PauseButton" to="." method="_on_PauseButton_toggled"]

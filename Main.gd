@@ -5,6 +5,8 @@ extends Node
 var dotutorial=false# play tutorial
 var tutorialpart=0# part of tutorial played (starts at 0)
 var tutorialdone=false# ended tutorial
+#
+var doswipes=true# allow to control player via swipes
 ################
 # Main script (entry point for code)
 # -entry point for code

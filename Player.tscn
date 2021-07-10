@@ -44,15 +44,15 @@ animations = [ {
 "name": "up",
 "speed": 8.0
 }, {
-"frames": [ ExtResource( 26 ), ExtResource( 27 ), ExtResource( 1 ), ExtResource( 25 ), ExtResource( 25 ), ExtResource( 1 ), ExtResource( 27 ), ExtResource( 26 ) ],
-"loop": true,
-"name": "down",
-"speed": 8.0
-}, {
 "frames": [ ExtResource( 13 ) ],
 "loop": true,
 "name": "dead",
 "speed": 5.0
+}, {
+"frames": [ ExtResource( 26 ), ExtResource( 27 ), ExtResource( 1 ), ExtResource( 25 ), ExtResource( 25 ), ExtResource( 1 ), ExtResource( 27 ), ExtResource( 26 ) ],
+"loop": true,
+"name": "down",
+"speed": 8.0
 }, {
 "frames": [ ExtResource( 6 ) ],
 "loop": true,

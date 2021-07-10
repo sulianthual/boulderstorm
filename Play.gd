@@ -8,7 +8,6 @@ export (PackedScene) var Arrow
 ################################################################################################################
 # Variables Initialization
 # *VAR
-
 # Main Game Parameters (may edit here)
 export var hpref: int=7 # starting health for player, and maximum (must be <=7)
 export var levelscores=[5, 10, 20, 35, 55, 80, 110, 145, 185]# (+5 each level, best one)
@@ -141,6 +140,8 @@ func start():
 	# music
 	$PlayMusic.set_pitch_scale(musicpitch)
 	$PlayMusic.play()
+	#pause
+	$PauseButton.show()
 	#exit
 	$ExitButton.show()
 
@@ -172,6 +173,8 @@ func start_tutorial():
 	# music
 	$PlayMusic.set_pitch_scale(musicpitch)
 	$PlayMusic.stop()
+	#pause
+	$PauseButton.hide()
 	# exit
 	$ExitButton.hide()
 	# messages
@@ -284,6 +287,7 @@ func endgame():
 
 # Press exit button
 func _on_ExitButton_pressed():
+	get_tree().paused  = false# unpause if was unpaused
 	Main.to_start()# to titlescreen
 
 # next step of tutorial
@@ -360,7 +364,8 @@ func keyboardcontrols():
 #
 # control player with swipes (on touchscreen)
 func _on_SwipeDetector_swiped(direction):
-	setmoveplayer(direction)
+	if Main.doswipes:
+		setmoveplayer(direction)
 
 # set a player move
 func setmoveplayer(direction):
@@ -399,6 +404,15 @@ func setmoveplayer(direction):
 			op=3
 			$Player.place(ip,jp,sp,op)
 
+# pause button pressed: abort proposed moves 
+func _on_PauseButton_toggled(button_pressed):
+	sp=0# back to non moving
+	ipn=ip
+	jpn=jp
+	op=3# arbitrarily orient player (to cancel swipe orientations)
+	$Player.place(ip,jp,sp,op)
+	$SelectSound.play()
+	
 
 # move the player (reload afterward)
 func moveplayer():
@@ -858,6 +872,8 @@ func ktoij(k):
 ################################################################################################################
 
 ###############
+
+
 
 
 
